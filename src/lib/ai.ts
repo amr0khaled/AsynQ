@@ -1,4 +1,11 @@
-import { DynamicRetrievalConfigMode, FeatureSelectionPreference, GenerateContentConfig, GoogleGenAI, HarmBlockThreshold, HarmCategory, ThinkingLevel } from '@google/genai'
+import {
+  DynamicRetrievalConfigMode,
+  GenerateContentConfig,
+  GoogleGenAI,
+  HarmBlockThreshold,
+  HarmCategory,
+  ThinkingLevel
+} from '@google/genai'
 
 const apiKey = process.env.GEMINI_API_KEY
 const globalAi = global as unknown as { ai: GoogleGenAI }
@@ -25,11 +32,9 @@ const safetySettings = [
     threshold: HarmBlockThreshold.BLOCK_LOW_AND_ABOVE,
   }
 ]
+
 const config = {
   safetySettings,
-  modelSelectionConfig: {
-    featureSelectionPreference: FeatureSelectionPreference.PRIORITIZE_COST
-  },
   thinkingConfig: {
     thinkingLevel: ThinkingLevel.MINIMAL,
     thinkingBudget: 0,
@@ -46,32 +51,49 @@ const config = {
   ],
   systemInstruction: "Create a concise professional and modern content for social media platforms"
 } satisfies GenerateContentConfig
-let ai
-let model
-if (apiKey === undefined) {
-  ai = undefined
-  model = undefined
-} else {
-  ai = globalAi.ai || new GoogleGenAI({
-    apiKey,
-    project: 'gen-lang-client-0135610369',
-  })
-}
 
+let ai: GoogleGenAI | undefined
+
+if (!apiKey) {
+  console.warn('⚠️ GEMINI_API_KEY not found. AI features will be disabled.')
+  ai = undefined
+} else {
+  // Cache the AI instance globally in development to prevent hot-reload issues
+  if (process.env.NODE_ENV === 'development') {
+    if (!globalAi.ai) {
+      globalAi.ai = new GoogleGenAI({ apiKey })
+    }
+    ai = globalAi.ai
+  } else {
+    ai = new GoogleGenAI({ apiKey })
+  }
+}
 
 const prompt = async (contents: string) => {
   if (!ai) {
-    return false
+    throw new Error('AI client not initialized. Please set GEMINI_API_KEY environment variable.')
   }
-  return await ai.models.generateContentStream({
-    model: 'gemini-2.0-flash-001',
-    contents,
-    config
-  })
+
+  try {
+    const stream = await ai.models.generateContentStream({
+      model: 'gemini-2.5-flash-lite',
+      contents: [{
+        role: 'user',
+        parts: [{ text: contents }]
+      }],
+      ...config
+    })
+
+    return stream
+  } catch (error: any) {
+    console.error('❌ Gemini API error:', {
+      message: error.message,
+      code: error.code,
+      status: error.status
+    })
+    throw error
+  }
 }
 
 export default ai
-export {
-  prompt
-}
-
+export { prompt }
