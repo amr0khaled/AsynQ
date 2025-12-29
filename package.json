@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "db:migrate:dev": "NODE_ENV=development bun run --env-file=.env.local prisma migrate dev --name",
+    "db:migrate:deploy": "NODE_ENV=production bun run --env-file=.env.local prisma migrate deploy"
   },
   "dependencies": {
     "@firebase/analytics": "^0.10.19",
