@@ -1,0 +1,32 @@
+datasource db {
+  provider = "postgresql"
+}
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/lib/prisma/"
+}
+
+model User {
+  id        String   @id
+  name      String
+  email     String   @unique
+  credits   Int      @default(5)
+  posts     Post[]
+  lastReset DateTime @default(now())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("users")
+}
+
+model Post {
+  id        String   @id @default(uuid())
+  prompt    String
+  content   String
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+
+  @@map("posts")
+}
