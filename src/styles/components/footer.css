@@ -3,7 +3,12 @@
 
 @layer components {
   .footer {
+<<<<<<< Updated upstream
     @apply bg-foreground text-background;
+=======
+    @apply bg-background text-foreground;
+    @apply border-t-1 border-white/25;
+>>>>>>> Stashed changes
     @apply px-4 pt-6 pb-2;
     @apply flex flex-col flex-wrap gap-y-6;
 
@@ -21,7 +26,11 @@
     }
 
     .about {
+<<<<<<< Updated upstream
       @apply text-background/60 md:w-3/5 w-10/12 text-xl;
+=======
+      @apply dark:text-foreground/60 text-background/60 md:w-3/5 w-10/12 text-xl;
+>>>>>>> Stashed changes
     }
 
     .dev-details {
@@ -38,7 +47,11 @@
         .icon-item {
           @apply hover:-translate-y-1;
           @apply transition-transform duration-200 ease-out;
+<<<<<<< Updated upstream
           @apply text-background/70 hover:text-background cursor-pointer;
+=======
+          @apply dark:text-foreground/70 text-background/70 hover:text-background cursor-pointer;
+>>>>>>> Stashed changes
 
           .icon {
             @apply size-8;
