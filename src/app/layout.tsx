@@ -20,7 +20,7 @@ export default function RootLayout({
         className={`${poppins.className} antialiased`}
       >
         <Header />
-        <main className='pt-20'>
+        <main className=''>
           {children}
         </main>
         <Footer />
