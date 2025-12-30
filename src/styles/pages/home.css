@@ -2,7 +2,6 @@
 
 @layer components {
   .hero {
-    @apply bg-foreground text-background;
     @apply min-h-screen w-full -translate-y-4;
     @apply flex flex-col justify-center items-center gap-y-8;
 
