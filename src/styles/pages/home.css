@@ -1,0 +1,25 @@
+@import '../globals.css';
+
+@layer components {
+  .hero {
+    .main-paragraph {
+      .your {}
+    }
+
+    .operation-buttons {}
+  }
+
+  button {
+    @apply w-32 h-12 rounded-3xl;
+    @apply flex justify-center items-center;
+    @apply font-semibold text-xl;
+  }
+
+  button.primary {
+    @apply bg-accent text-secondary;
+  }
+
+  button.secondary {
+    @apply bg-secondary text-accent;
+  }
+}
