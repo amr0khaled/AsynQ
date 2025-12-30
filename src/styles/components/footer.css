@@ -1,0 +1,55 @@
+@import '../globals.css';
+
+
+@layer components {
+  .footer {
+    @apply bg-foreground text-background;
+    @apply px-4 pt-6 pb-2;
+    @apply flex flex-col flex-wrap gap-y-6;
+
+    .app-details,
+    .dev-details,
+    .contacts {
+      @apply flex flex-col gap-4;
+    }
+
+    .app-details {
+      .brand {
+        @apply font-normal text-3xl;
+      }
+
+    }
+
+    .about {
+      @apply text-background/60 md:w-3/5 w-10/12 text-xl;
+    }
+
+    .dev-details {
+      .dev-name {
+        @apply transition-transform duration-200 ease-out;
+        @apply text-2xl flex gap-4;
+      }
+    }
+
+    .contacts {
+      .icons-list {
+        @apply flex gap-4;
+
+        .icon-item {
+          @apply hover:-translate-y-1;
+          @apply transition-transform duration-200 ease-out;
+          @apply text-background/70 hover:text-background cursor-pointer;
+
+          .icon {
+            @apply size-8;
+
+          }
+        }
+      }
+    }
+
+    .rights {
+      @apply text-background/60 place-self-center;
+    }
+  }
+}
