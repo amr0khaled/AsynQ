@@ -2,7 +2,7 @@ import { Spinner } from "@/components/ui/spinner";
 
 
 export default function Loading() {
-  return <main className='flex justify-center items-center min-h-screen w-full'>
-    <Spinner className='size-8' />
-  </main>
+  return <section className='flex justify-center mx-auto my-auto items-center min-h-[calc(100vh-80px)] w-full pt-20'>
+    <Spinner className='size-12' />
+  </section>
 }
