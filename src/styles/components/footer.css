@@ -6,6 +6,7 @@
     @apply bg-background text-foreground;
     @apply border-t-1 border-white/25;
     @apply px-4 pt-6 pb-2;
+    @apply mt-8;
     @apply flex flex-col flex-wrap gap-y-6;
 
     .app-details,
