@@ -8,6 +8,7 @@ import { DoorClosed, DoorOpenIcon } from 'lucide-react';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth } from '@/lib/firebase';
 import { Separator } from './ui/separator';
+import { useTheme } from '@/hooks/use-theme';
 const kyivType = localFont({
   src: '../assets/fonts/KyivTypeSans-VarGX.ttf'
 })
@@ -16,32 +17,7 @@ export default function Header() {
   const [credit, setCredit] = useState<number>(0)
 
   const [user, error] = useAuthState(auth)
-  const [theme, setTheme] = useState<'light' | 'dark'>('light')
-
-  // detect the browser default theme
-  useEffect(() => {
-    // Get initial theme
-    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
-    const initialTheme = mediaQuery.matches ? 'dark' : 'light'
-    setTheme(initialTheme)
-
-    // Listen for changes
-    const handleChange = (e: MediaQueryListEvent) => {
-      setTheme(e.matches ? 'dark' : 'light')
-    }
-
-    mediaQuery.addEventListener('change', handleChange)
-
-    // Cleanup
-    return () => {
-      mediaQuery.removeEventListener('change', handleChange)
-    }
-  }, [])
-
-  // modify the web app theme according to client's theme
-  useEffect(() => {
-    document.documentElement.classList.toggle('dark', theme === 'dark')
-  }, [theme])
+  useTheme()
 
   return <header className='header'>
     <span className='flex-1'>
