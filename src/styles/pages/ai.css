@@ -1,0 +1,45 @@
+@reference '../globals.css';
+
+
+@layer components {
+  .markdown {
+    * {
+      unicode-bidi: plaintext;
+      text-align: start;
+    }
+
+    strong,
+    span,
+    a {
+      display: inline-block;
+      width: 100%;
+    }
+
+    table {
+      /*
+      border-spacing: 0 !important;
+      border-collapse: collapse !important;
+      border-color: inherit !important;
+      display: block !important;
+      margin: 0 auto !important;
+      width: 100% !important;
+      max-width: 100% !important;
+      overflow: auto !important;
+      */
+      @apply table-auto block my-0 mx-auto border-collapse border border-gray-600;
+      @apply max-w-full w-full overflow-auto;
+    }
+
+    tbody,
+    td,
+    tfoot,
+    th,
+    thead,
+    tr {
+      border-color: inherit !important;
+      border-style: solid !important;
+      border-width: 2px !important;
+      padding: 0.5rem;
+    }
+  }
+}

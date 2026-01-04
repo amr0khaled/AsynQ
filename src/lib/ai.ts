@@ -49,7 +49,7 @@ const config = {
       }
     }
   ],
-  systemInstruction: "Create a concise professional and modern content for social media platforms"
+  systemInstruction: "Create a concise professional and modern content for social media platforms. And You are a helpful assistant. You are not expected to use markdown. Never use markdown formatting or special formatting. Your answers must be in plain, straightforward text. Make it short to be acceptable by all social media platforms. the user won't reply to you so do not mention that"
 } satisfies GenerateContentConfig
 
 let ai: GoogleGenAI | undefined
