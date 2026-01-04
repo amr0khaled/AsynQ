@@ -1,9 +1,29 @@
-import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, SidebarMenu } from "./ui/sidebar";
+'use client'
+import { Search } from "lucide-react";
+import { Button } from "./ui/button";
+import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarTrigger, useSidebar } from "./ui/sidebar";
 
 
 export default function HistorySidebar() {
-  return <Sidebar variant="inset">
-    <SidebarHeader className='flex items-center justify-around'>
+  const { state } = useSidebar()
+  return <Sidebar variant="inset" collapsible="icon">
+    <SidebarHeader>
+      <SidebarMenu className='flex flex-row items-center justify-between'>
+        <SidebarMenuItem>
+          <SidebarTrigger
+            variant={'primary'}
+            className='self-end hover:-translate-0 size-8'
+          />
+        </SidebarMenuItem>
+        <SidebarMenuItem
+          className={state === 'collapsed' ? 'invisible -translate-x-12' : ''}
+          aria-disabled={state === 'collapsed'}
+        >
+          <SidebarMenuButton>
+            <Search />
+          </SidebarMenuButton>
+        </SidebarMenuItem>
+      </SidebarMenu>
     </SidebarHeader>
     <SidebarContent>
       <SidebarGroup>
