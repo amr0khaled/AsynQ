@@ -9,7 +9,7 @@ import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth } from '@/lib/firebase';
 import { Separator } from './ui/separator';
 import { useTheme } from '@/hooks/use-theme';
-const kyivType = localFont({
+export const kyivType = localFont({
   src: '../assets/fonts/KyivTypeSans-VarGX.ttf'
 })
 
