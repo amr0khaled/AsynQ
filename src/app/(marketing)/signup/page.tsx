@@ -11,12 +11,11 @@ import { Field, FieldError, FieldGroup, FieldLabel, FieldSet } from "@/component
 import { Controller, SubmitErrorHandler, useForm } from "react-hook-form";
 import { zodResolver } from '@hookform/resolvers/zod'
 import z from "zod";
-import { loginFormSchema, signupFormSchema } from "@/lib/input-schemas";
+import { signupFormSchema } from "@/lib/input-schemas";
 import { toast } from "sonner";
 import { Separator } from "@/components/ui/separator";
-import { FaGoogle } from "react-icons/fa6";
+import { FcGoogle } from "react-icons/fc";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import Loading from "../loading";
 
 enum SignUpMethod {
   EMAIL = "EMAIL",
@@ -51,7 +50,7 @@ export default function Page() {
     toast.error('Auth state error:' + error)
     return <div>Authentication error. Please refresh.</div>
   }
-  const onError: SubmitErrorHandler<z.infer<typeof loginFormSchema>> = (errors) => {
+  const onError: SubmitErrorHandler<z.infer<typeof signupFormSchema>> = (errors) => {
     let message = ""
     for (const error of Object.keys(errors)) {
       if (Object.hasOwn(errors, error)) {
@@ -60,7 +59,7 @@ export default function Page() {
     }
     toast.error('Form has Validation Errors. ' + message);
   }
-  const onSubmit = async ({ email, password }: z.infer<typeof loginFormSchema>) => {
+  const onSubmit = async ({ name, email, password }: z.infer<typeof signupFormSchema>) => {
     if (isSigningUp) return
 
     function methodToString(method: SignUpMethod) {
@@ -80,8 +79,8 @@ export default function Page() {
 
       switch (signupMethod) {
         case SignUpMethod.EMAIL:
-          if (!email || !password) {
-            toast.error('Please enter email and password')
+          if (!email || !password || !name) {
+            toast.error('Please enter name, email and password')
             setIsSigningUp(false)
             return
           }
@@ -133,7 +132,7 @@ export default function Page() {
       <Card className='max-w-sm mx-auto'>
         <CardHeader>
           <CardTitle>
-            Log into your account
+            Create a new Account
           </CardTitle>
           <CardDescription>
             Enter your credentails below
@@ -221,7 +220,7 @@ export default function Page() {
               <span className='inline-flex items-center gap-x-6'>
                 {signupMethod === SignUpMethod.EMAIL && isSigningUp
                   ? <><Spinner /> Signing up...</>
-                  : <>Log in</>
+                  : <>Sign Up</>
                 }
               </span>
             </Button>
@@ -231,13 +230,14 @@ export default function Page() {
             <Button
               onClick={() => setSignupMethod(SignUpMethod.GOOGLE)}
               disabled={isSigningUp}
-              className='bg-blue-500 text-white w-full hover:bg-blue-400'
+              variant={'outline'}
+              className='text-white w-full hover:brightness-110 py-5'
               form="signup-form"
             >
-              <span className='inline-flex items-center gap-x-6'>
+              <span className='inline-flex items-center gap-x-2'>
                 {signupMethod === SignUpMethod.GOOGLE && isSigningUp
                   ? <><Spinner /> Signing...</>
-                  : <><FaGoogle /> Sign up With Google</>
+                  : <><FcGoogle className='size-6' /> Sign up With Google</>
                 }
               </span>
             </Button>
