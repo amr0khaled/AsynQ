@@ -6,18 +6,19 @@ import { useRouter } from "next/navigation"; // Changed from redirect
 import { useAuthState } from 'react-firebase-hooks/auth'
 import { useEffect, useState } from 'react'
 import { Button } from "@/components/ui/button";
-import { signInWithPopup, signInWithEmailAndPassword, User } from '@firebase/auth'
+import { signInWithPopup, signInWithEmailAndPassword, User, createUserWithEmailAndPassword } from '@firebase/auth'
 import { Field, FieldError, FieldGroup, FieldLabel, FieldSet } from "@/components/ui/field";
 import { Controller, SubmitErrorHandler, useForm } from "react-hook-form";
 import { zodResolver } from '@hookform/resolvers/zod'
 import z from "zod";
-import { loginFormSchema } from "@/lib/input-schemas";
+import { loginFormSchema, signupFormSchema } from "@/lib/input-schemas";
 import { toast } from "sonner";
 import { Separator } from "@/components/ui/separator";
 import { FaGoogle } from "react-icons/fa6";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import Loading from "../loading";
 
-enum SignInMethod {
+enum SignUpMethod {
   EMAIL = "EMAIL",
   GOOGLE = "GOOGLE"
 }
@@ -25,12 +26,12 @@ enum SignInMethod {
 export default function Page() {
   const router = useRouter()
   const [user, loading, error] = useAuthState(auth)
-  const [loginMethod, setLoginMethod] = useState<SignInMethod>(SignInMethod.EMAIL)
-  const [isLoggingIn, setIsLoggingIn] = useState(false)
+  const [signupMethod, setSignupMethod] = useState<SignUpMethod>(SignUpMethod.EMAIL)
+  const [isSigningUp, setIsSigningUp] = useState(false)
 
 
-  const { control, handleSubmit } = useForm<z.infer<typeof loginFormSchema>>({
-    resolver: zodResolver(loginFormSchema),
+  const { control, handleSubmit } = useForm<z.infer<typeof signupFormSchema>>({
+    resolver: zodResolver(signupFormSchema),
     defaultValues: {
       email: "",
       password: ''
@@ -60,35 +61,36 @@ export default function Page() {
     toast.error('Form has Validation Errors. ' + message);
   }
   const onSubmit = async ({ email, password }: z.infer<typeof loginFormSchema>) => {
-    if (isLoggingIn) return
+    if (isSigningUp) return
 
-    function methodToString(method: SignInMethod) {
+    function methodToString(method: SignUpMethod) {
       switch (method) {
-        case SignInMethod.EMAIL:
+        case SignUpMethod.EMAIL:
           return "Email"
-        case SignInMethod.GOOGLE:
+        case SignUpMethod.GOOGLE:
           return "Google"
       }
     }
 
-    toast.info(`You're logging in with ${methodToString(loginMethod)}`)
+    toast.info(`You're signing up with ${methodToString(signupMethod)}`)
 
-    setIsLoggingIn(true)
+    setIsSigningUp(true)
     try {
       let userResult: User | null = null
 
-      switch (loginMethod) {
-        case SignInMethod.EMAIL:
+      switch (signupMethod) {
+        case SignUpMethod.EMAIL:
           if (!email || !password) {
             toast.error('Please enter email and password')
-            setIsLoggingIn(false)
+            setIsSigningUp(false)
             return
           }
           const resEmail = await signInWithEmailAndPassword(auth, email, password)
+          createUserWithEmailAndPassword(auth, email, password)
           userResult = resEmail.user
           break
 
-        case SignInMethod.GOOGLE:
+        case SignUpMethod.GOOGLE:
           const resGoogle = await signInWithPopup(auth, googleProvider)
           userResult = resGoogle.user
           break
@@ -122,7 +124,7 @@ export default function Page() {
         default:
           toast.error('Authentication error. ' + (e?.message.split(":")[1] || 'Unknown error'))
       }
-      setIsLoggingIn(false)
+      setIsSigningUp(false)
     }
   }
 
@@ -141,10 +143,30 @@ export default function Page() {
           <form
             onSubmit={handleSubmit(onSubmit, onError)}
             className="space-y-4 gap-y-8"
-            id="login-form"
+            id="signup-form"
           >
             <FieldGroup>
               <FieldSet>
+                <Controller
+                  name='name'
+                  control={control}
+                  render={({ field, fieldState }) => (
+                    <Field data-invalid={fieldState.invalid}>
+                      <FieldLabel htmlFor={field.name}>Name</FieldLabel>
+                      <Input
+                        {...field}
+                        id={field.name}
+                        aria-invalid={fieldState.invalid}
+                        type="text"
+                        required
+                      />
+                      {fieldState.invalid && (
+                        <FieldError errors={[fieldState.error]} />
+                      )}
+                    </Field>
+
+                  )}
+                />
                 <Controller
                   name='email'
                   control={control}
@@ -192,13 +214,13 @@ export default function Page() {
           >
             <Button
               type='submit'
-              disabled={isLoggingIn}
+              disabled={isSigningUp}
               className="w-full"
-              form="login-form"
+              form="signup-form"
             >
               <span className='inline-flex items-center gap-x-6'>
-                {loginMethod === SignInMethod.EMAIL && isLoggingIn
-                  ? <><Spinner /> Logging in...</>
+                {signupMethod === SignUpMethod.EMAIL && isSigningUp
+                  ? <><Spinner /> Signing up...</>
                   : <>Log in</>
                 }
               </span>
@@ -207,15 +229,15 @@ export default function Page() {
             <Separator />
 
             <Button
-              onClick={() => setLoginMethod(SignInMethod.GOOGLE)}
-              disabled={isLoggingIn}
+              onClick={() => setSignupMethod(SignUpMethod.GOOGLE)}
+              disabled={isSigningUp}
               className='bg-blue-500 text-white w-full hover:bg-blue-400'
-              form="login-form"
+              form="signup-form"
             >
               <span className='inline-flex items-center gap-x-6'>
-                {loginMethod === SignInMethod.GOOGLE && isLoggingIn
+                {signupMethod === SignUpMethod.GOOGLE && isSigningUp
                   ? <><Spinner /> Signing...</>
-                  : <><FaGoogle /> Sign in With Google</>
+                  : <><FaGoogle /> Sign up With Google</>
                 }
               </span>
             </Button>
