@@ -15,4 +15,7 @@ jobs:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           API_KEY: ${{ secrets.SUPABASE_SECRET }}
         # Just fetching the URL is enough to reset the 7-day timer
-        run: curl -I $SUPABASE_URL \ -H "apiKey: $API_KEY" \ -H "Authorization: $API_KEY"
+        run: |
+          curl -I $SUPABASE_URL \
+            -H "apiKey: $API_KEY" \
+            -H "Authorization: $API_KEY"
