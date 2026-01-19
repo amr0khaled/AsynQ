@@ -17,13 +17,15 @@ export default function Header() {
   const [credit, setCredit] = useState<number>(0)
 
   const [user, error] = useAuthState(auth)
+  const isAuthed = !!user
   useTheme()
 
   return <header className='header'>
     <span className='flex-1'>
       {
-        !!user &&
-        `Hi, ${user?.displayName}!`
+        isAuthed ?
+          `Hi, ${user.displayName}!`
+          : `Hi, Guest!`
       }
     </span>
     <div className='logo-container'>
@@ -32,29 +34,22 @@ export default function Header() {
       </span>
     </div>
     <nav className='profile-nav'>
-      <span className='credits' >
-        Credits: {credit}
-      </span>
-      <Separator orientation='vertical' />
+      {
+        isAuthed &&
+        <>
+          <span className='credits' >
+            Credits: {credit}
+          </span>
+          <Separator orientation='vertical' />
+        </>
+      }
       <ul className='profile-controls'>
-        {!true ?
+        {isAuthed ?
           <>
             <li>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button>
-                    <DoorOpenIcon />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  Log Out
-                </TooltipContent>
-              </Tooltip>
-            </li>
-            <li>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button variant={'destructive'}>
+                  <Button variant={'destructive'} size={'icon-sm'}>
                     <DoorOpenIcon />
                   </Button>
                 </TooltipTrigger>
@@ -67,12 +62,12 @@ export default function Header() {
           :
           <>
             <li>
-              <Button>
+              <Button size='sm' className='text-sm max-w-fit px-6'>
                 Log in
               </Button>
             </li>
             <li>
-              <Button variant={'ghost'}>
+              <Button variant={'ghost'} size='sm' className='text-sm max-w-fit px-6'>
                 Sign Up
               </Button>
             </li>
