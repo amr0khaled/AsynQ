@@ -16,7 +16,6 @@ import { toast } from "sonner";
 import { Separator } from "@/components/ui/separator";
 import { FaGoogle } from "react-icons/fa6";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import debounce from 'lodash/debounce'
 
 enum SignInMethod {
   EMAIL = "EMAIL",
