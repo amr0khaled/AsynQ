@@ -1,0 +1,18 @@
+name: Supabase Keep Alive
+
+on:
+  schedule:
+    # Run at 00:00 UTC every Monday and Thursday
+    - cron: '0 0 * * 1,4'
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-slim
+    steps:
+      - name: Ping Database
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          API_KEY: ${{ secrets.SUPABASE_SECRET }}
+        # Just fetching the URL is enough to reset the 7-day timer
+        run: curl -I $SUPABASE_URL \ -H "apiKey: $API_KEY" \ -H "Authorization: $API_KEY"
