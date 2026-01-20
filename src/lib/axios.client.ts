@@ -7,7 +7,6 @@ const api = x.create({
 })
 
 api.interceptors.request.use(async (req) => {
-  console.debug(auth.currentUser)
   if (!!auth.currentUser) {
     req.headers.set("Authorization", `Bearer ${await auth.currentUser.getIdToken()}`)
   }

@@ -11,9 +11,9 @@ type Props = {
 }
 
 export default function Layout({ children }: Props) {
-  const { user } = useAuth(auth)
+  const { user, loading } = useAuth(auth)
   const router = useRouter()
-  if (!user) {
+  if (!user && loading) {
     router.replace('/login')
   }
   return <SidebarProvider>

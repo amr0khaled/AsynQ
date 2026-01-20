@@ -1,6 +1,6 @@
 import api from "@/lib/axios.client";
 import { Auth, UserCredential } from "@firebase/auth";
-import { useCreateUserWithEmailAndPassword, useSignInWithEmailAndPassword, useSignInWithGoogle, useSignOut } from "react-firebase-hooks/auth";
+import { useAuthState, useCreateUserWithEmailAndPassword, useSignInWithEmailAndPassword, useSignInWithGoogle, useSignOut } from "react-firebase-hooks/auth";
 import { toast } from "sonner";
 import { errorNotifying } from "./use-error";
 import { FirebaseError } from "@firebase/app";
@@ -11,19 +11,20 @@ type AuthData = {
   email: string | null
   name: string | null
 }
-export const useAuth = (auth: Auth) => {
+export const useAuth = (auth: Auth, forceRedirect: boolean = false) => {
   const router = useRouter()
-  const [signInWithEmailAndPassword, userCredential, loading, error] = useSignInWithEmailAndPassword(auth)
+  const [user] = useAuthState(auth)
+  const [signInWithEmailAndPassword, _, loading, error] = useSignInWithEmailAndPassword(auth)
   const [createUserWithEmailAndPassword] = useCreateUserWithEmailAndPassword(auth)
   const [signInWithGoogle] = useSignInWithGoogle(auth)
   const [signOut] = useSignOut(auth)
 
   useEffect(() => {
-    if (userCredential) {
+    if (user && forceRedirect && !loading) {
       toast.info("You're already logged in. Redirecting...")
       router.push('/post/create')
     }
-  }, [userCredential, router])
+  }, [user, router])
 
   if (error) {
     toast.error(error.message)
@@ -73,7 +74,7 @@ export const useAuth = (auth: Auth) => {
     signInWithEmailAndPassword: handleSignInWithEmailAndPassword,
     signInWithGoogle: handleSignInWithGoogle,
     signOut,
-    user: userCredential?.user,
+    user,
     loading,
     error
   }

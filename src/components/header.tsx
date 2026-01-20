@@ -10,6 +10,7 @@ import { useTheme } from '@/hooks/use-theme';
 import { useRouter } from 'next/navigation';
 import { useCredits } from '@/hooks/use-credits';
 import { useAuth } from '@/hooks/use-auth';
+import { useAuthState } from 'react-firebase-hooks/auth';
 export const kyivType = localFont({
   src: '../assets/fonts/KyivTypeSans-VarGX.ttf'
 })
@@ -18,7 +19,6 @@ export default function Header() {
   const router = useRouter()
   const { credits } = useCredits()
   const { signOut, user } = useAuth(auth)
-
 
   const isAuthed = !!user
   useTheme()
