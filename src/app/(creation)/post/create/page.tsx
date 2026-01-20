@@ -18,6 +18,8 @@ import remarkGFM from 'remark-gfm'
 import api from '@/lib/axios.client'
 import { toast } from 'sonner'
 import '@/styles/pages/ai.css'
+import { useAuthState } from 'react-firebase-hooks/auth'
+import { auth } from '@/lib/firebase/client'
 
 type Post = {
   id?: string

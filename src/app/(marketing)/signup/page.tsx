@@ -1,9 +1,9 @@
 'use client'
 import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
-import { auth, googleProvider } from "@/lib/firebase";
+import { auth, googleProvider } from "@/lib/firebase/client";
 import { useRouter } from "next/navigation"; // Changed from redirect
-import { useAuthState } from 'react-firebase-hooks/auth'
+import { useAuthState, useCreateUserWithEmailAndPassword, useSignInWithGoogle } from 'react-firebase-hooks/auth'
 import { useEffect, useState } from 'react'
 import { Button } from "@/components/ui/button";
 import { signInWithPopup, signInWithEmailAndPassword, User, createUserWithEmailAndPassword } from '@firebase/auth'
@@ -16,6 +16,7 @@ import { toast } from "sonner";
 import { Separator } from "@/components/ui/separator";
 import { FcGoogle } from "react-icons/fc";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import api from "@/lib/axios.client";
 
 enum SignUpMethod {
   EMAIL = "EMAIL",
@@ -24,9 +25,10 @@ enum SignUpMethod {
 
 export default function Page() {
   const router = useRouter()
-  const [user, loading, error] = useAuthState(auth)
   const [signupMethod, setSignupMethod] = useState<SignUpMethod>(SignUpMethod.EMAIL)
   const [isSigningUp, setIsSigningUp] = useState(false)
+  const [createUserWithEmailAndPassword] = useCreateUserWithEmailAndPassword(auth)
+  const [signInWithGoogle, user, loading, error] = useSignInWithGoogle(auth)
 
 
   const { control, handleSubmit } = useForm<z.infer<typeof signupFormSchema>>({
@@ -38,17 +40,15 @@ export default function Page() {
   })
 
 
-  // useEffect(() => {
-  //   if (user) {
-  //     toast.info("You're already logged in. Redirecting...")
-  //     router.push('/success')
-  //   }
-  // }, [user, router])
+  useEffect(() => {
+    if (user) {
+      toast.info("You're already logged in. Redirecting...")
+      router.push('/post/create')
+    }
+  }, [user, router])
 
-  if (loading) return <Spinner />
   if (error) {
     toast.error('Auth state error:' + error)
-    return <div>Authentication error. Please refresh.</div>
   }
   const onError: SubmitErrorHandler<z.infer<typeof signupFormSchema>> = (errors) => {
     let message = ""
@@ -62,44 +62,22 @@ export default function Page() {
   const onSubmit = async ({ name, email, password }: z.infer<typeof signupFormSchema>) => {
     if (isSigningUp) return
 
-    function methodToString(method: SignUpMethod) {
-      switch (method) {
-        case SignUpMethod.EMAIL:
-          return "Email"
-        case SignUpMethod.GOOGLE:
-          return "Google"
-      }
-    }
-
-    toast.info(`You're signing up with ${methodToString(signupMethod)}`)
-
     setIsSigningUp(true)
     try {
-      let userResult: User | null = null
-
-      switch (signupMethod) {
-        case SignUpMethod.EMAIL:
-          if (!email || !password || !name) {
-            toast.error('Please enter name, email and password')
-            setIsSigningUp(false)
-            return
-          }
-          const resEmail = await signInWithEmailAndPassword(auth, email, password)
-          createUserWithEmailAndPassword(auth, email, password)
-          userResult = resEmail.user
-          break
-
-        case SignUpMethod.GOOGLE:
-          const resGoogle = await signInWithPopup(auth, googleProvider)
-          userResult = resGoogle.user
-          break
-
-        default:
-          throw new Error("METHOD IS NOT SUPPORTED")
+      const result = await createUserWithEmailAndPassword(email, password)
+      if (!result) {
+        toast.error("Sign up Failed.")
+        return
       }
+      const user = result.user
+      await api.post('/user/create', {
+        email: user.email,
+        id: user.uid,
+        name
+      })
 
-      console.log('Login successful:', userResult?.email)
-      toast.success("Logged in successfully")
+      console.log('Sign up successful:', user.email)
+      toast.success("Signned up successfully")
     } catch (e: any) {
       switch (e?.code) {
         case "auth/internal-error":
@@ -141,7 +119,7 @@ export default function Page() {
         <CardContent>
           <form
             onSubmit={handleSubmit(onSubmit, onError)}
-            className="space-y-4 gap-y-8"
+            className="gap-y-4"
             id="signup-form"
           >
             <FieldGroup>
@@ -155,6 +133,7 @@ export default function Page() {
                       <Input
                         {...field}
                         id={field.name}
+                        disabled={isSigningUp || loading}
                         aria-invalid={fieldState.invalid}
                         type="text"
                         required
@@ -175,6 +154,7 @@ export default function Page() {
                       <Input
                         {...field}
                         id={field.name}
+                        disabled={isSigningUp || loading}
                         aria-invalid={fieldState.invalid}
                         type="email"
                       />
@@ -194,6 +174,7 @@ export default function Page() {
                       <Input
                         {...field}
                         id={field.name}
+                        disabled={isSigningUp || loading}
                         aria-invalid={fieldState.invalid}
                         type="password"
                       />
@@ -213,12 +194,12 @@ export default function Page() {
           >
             <Button
               type='submit'
-              disabled={isSigningUp}
+              disabled={isSigningUp || loading}
               className="w-full"
               form="signup-form"
             >
               <span className='inline-flex items-center gap-x-6'>
-                {signupMethod === SignUpMethod.EMAIL && isSigningUp
+                {signupMethod === SignUpMethod.EMAIL && (isSigningUp || loading)
                   ? <><Spinner /> Signing up...</>
                   : <>Sign Up</>
                 }
@@ -228,14 +209,15 @@ export default function Page() {
             <Separator />
 
             <Button
-              onClick={() => setSignupMethod(SignUpMethod.GOOGLE)}
-              disabled={isSigningUp}
+              onClick={() => signInWithGoogle()}
+              disabled={isSigningUp || loading}
               variant={'outline'}
+              type='button'
               className='text-white w-full hover:brightness-110 py-5'
               form="signup-form"
             >
               <span className='inline-flex items-center gap-x-2'>
-                {signupMethod === SignUpMethod.GOOGLE && isSigningUp
+                {(isSigningUp || loading)
                   ? <><Spinner /> Signing...</>
                   : <><FcGoogle className='size-6' /> Sign up With Google</>
                 }

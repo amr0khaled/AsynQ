@@ -1,32 +1,52 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "./prisma";
+import { getAuth } from "firebase-admin/auth";
 
 
-export const checkUser = async (req: NextRequest) => {
+export async function checkUser(req: NextRequest) {
+  const authHeader = req.headers.get("Authorization")
+  const token = authHeader?.split("Bearer ")[1]
+  if (!token) return 401
 
-  const userId = req.nextUrl.searchParams.get("uid")
-  if (!userId)
-    return NextResponse.json(null, { status: 401 })
-  const user = await prisma.user.findUnique({
-    where: {
-      id: userId
-    }
-  })
-  if (!user)
-    return NextResponse.json(null, { status: 404 });
-  return userId;
+  try {
+    const auth = getAuth()
+    await auth.verifyIdToken(token)
+    return true
+  } catch {
+    return 401
+  }
+}
+export async function checkUserAndReturn(req: NextRequest) {
+  const authHeader = req.headers.get("Authorization")
+  const token = authHeader?.split("Bearer ")[1]
+  if (!token) return false
+
+  try {
+    const auth = getAuth()
+    const { uid } = await auth.verifyIdToken(token)
+    return uid
+  } catch (e) {
+    return false
+  }
 }
 
-export const checkUserAndReturn = async (req: NextRequest) => {
-  const userId = req.nextUrl.searchParams.get("uid")
-  if (!userId)
-    return NextResponse.json(null, { status: 401 })
-  const user = await prisma.user.findUnique({
-    where: {
-      id: userId
-    }
-  })
-  if (!user)
-    return NextResponse.json(null, { status: 404 });
-  return user;
+export async function checkUserAndReturnFromDB(req: NextRequest) {
+  const authHeader = req.headers.get("Authorization")
+  const token = authHeader?.split("Bearer ")[1]
+  if (!token) return 401
+
+  try {
+    const auth = getAuth()
+    const { uid, email } = await auth.verifyIdToken(token)
+    const user = await prisma.user.findUnique({
+      where: {
+        id: uid,
+        email,
+      }
+    })
+    if (!user) return 404
+    return user
+  } catch {
+    return 401
+  }
 }
