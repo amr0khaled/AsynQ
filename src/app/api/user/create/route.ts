@@ -6,12 +6,19 @@ import z from "zod";
 
 
 export const POST = async (req: NextRequest) => {
+  console.info("SSSSS")
   const uid = await checkUserAndReturn(req)
-  if (!uid) return NextResponse.json(null, { status: 401 })
-  const { error, success, data } = signupServerSchema.safeParse(req.json())
+  if (!!!uid) return NextResponse.json(null, { status: 401 })
+  const { error, success, data } = signupServerSchema.safeParse(await req.json())
   if (!success) return NextResponse.json(z.treeifyError(error), { status: 400 })
   const { name, email } = data
-  const user = await prisma.user.create({
+  let user = await prisma.user.findUnique({
+    where: {
+      id: uid,
+    }
+  })
+  if (user) return NextResponse.json(null)
+  user = await prisma.user.create({
     data: {
       name,
       id: uid,

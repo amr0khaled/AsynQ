@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import prisma from "./prisma";
 import { getAuth } from "firebase-admin/auth";
 
@@ -26,6 +26,7 @@ export async function checkUserAndReturn(req: NextRequest) {
     const { uid } = await auth.verifyIdToken(token)
     return uid
   } catch (e) {
+    console.error(e)
     return false
   }
 }
