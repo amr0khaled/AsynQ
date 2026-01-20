@@ -1,14 +1,14 @@
 import { prompt } from "@/lib/ai"
-import { checkUser, checkUserAndReturn } from "@/lib/auth"
+import { checkUserAndReturnFromDB } from "@/lib/auth"
 import prisma from "@/lib/prisma"
 import { User } from "@/lib/prisma/client"
 import { checkRateLimit, getRateLimitInfo } from "@/lib/rate-limiter"
 import { NextRequest, NextResponse } from "next/server"
 
 export const POST = async (req: NextRequest) => {
-  const auth = await checkUserAndReturn(req)
-  if (auth instanceof NextResponse) {
-    return auth
+  const auth = await checkUserAndReturnFromDB(req)
+  if (typeof auth === 'number') {
+    return NextResponse.json(undefined, { status: auth })
   }
   const user: User = auth
 
@@ -37,7 +37,7 @@ export const POST = async (req: NextRequest) => {
     const identifier = req.headers.get('x-forwarded-for') || 'anonymous'
 
     // Check rate limit: 10 requests per minute
-    if (!checkRateLimit(identifier, 10, 60000)) {
+    if (!checkRateLimit(identifier, 5, 60000)) {
       const { resetIn } = getRateLimitInfo(identifier)
       return NextResponse.json(
         {
