@@ -22,7 +22,7 @@ export default function Page() {
     signInWithGoogle,
     createUserWithEmailAndPassword,
     loading
-  } = useAuth(auth)
+  } = useAuth(auth, true)
 
 
   const { control, handleSubmit } = useForm<z.infer<typeof signupFormSchema>>({

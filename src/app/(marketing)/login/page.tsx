@@ -21,7 +21,7 @@ export default function Page() {
     signInWithGoogle,
     signInWithEmailAndPassword,
     loading
-  } = useAuth(auth)
+  } = useAuth(auth, true)
 
 
   const { control, handleSubmit } = useForm<z.infer<typeof loginFormSchema>>({
