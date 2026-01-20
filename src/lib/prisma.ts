@@ -1,15 +1,17 @@
-import { PrismaClient } from './prisma/client'
-import { LogLevel, LogDefinition, PrismaClientOptions, Subset } from './prisma/internal/prismaNamespace'
-import { env } from 'prisma/config'
+import 'server-only'
+import { PrismaClient } from './prisma/index'
+import { PrismaPg } from '@prisma/adapter-pg'
+import { Pool } from "pg"
 
 
 const globalPrisma = global as unknown as { prisma: PrismaClient }
-
+const pool = new Pool({ connectionString: process.env.DATABASE_URL })
+const adapter = new PrismaPg(pool)
 const prisma = globalPrisma.prisma || new PrismaClient({
   errorFormat: "pretty",
-  accelerateUrl: env("DATABASE_URL"),
+  adapter,
   log: ['error', 'warn', 'info', 'query']
-} satisfies Subset<PrismaClientOptions, PrismaClientOptions>)
+})
 
 
 export default prisma

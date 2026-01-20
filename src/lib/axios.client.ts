@@ -1,14 +1,15 @@
+import 'client-only'
 import x from 'axios'
-import { toast } from 'sonner'
-import { auth } from './firebase'
+import { auth } from './firebase/client'
 
 const api = x.create({
   allowAbsoluteUrls: false
 })
 
-api.interceptors.request.use((req) => {
+api.interceptors.request.use(async (req) => {
+  console.debug(auth.currentUser)
   if (!!auth.currentUser) {
-    req.url += `?uid=${auth.currentUser.uid}`
+    req.headers.set("Authorization", `Bearer ${await auth.currentUser.getIdToken()}`)
   }
   return req
 }, (e) => {

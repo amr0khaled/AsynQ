@@ -1,22 +1,27 @@
 'use client'
 import '@/styles/components/header.css'
 import localFont from "next/font/local";
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { Button } from './ui/button';
 import { Tooltip, TooltipTrigger, TooltipContent } from './ui/tooltip';
-import { DoorClosed, DoorOpenIcon } from 'lucide-react';
+import { DoorOpenIcon } from 'lucide-react';
 import { useAuthState } from 'react-firebase-hooks/auth';
-import { auth } from '@/lib/firebase';
+import { auth } from '@/lib/firebase/client';
 import { Separator } from './ui/separator';
 import { useTheme } from '@/hooks/use-theme';
+import { signOut } from '@firebase/auth';
+import { useRouter } from 'next/navigation';
+import { CreditContext, useCredits } from '@/hooks/use-credits';
 export const kyivType = localFont({
   src: '../assets/fonts/KyivTypeSans-VarGX.ttf'
 })
 
 export default function Header() {
-  const [credit, setCredit] = useState<number>(0)
+  const router = useRouter()
+  const { credits } = useCredits()
+  const [user] = useAuthState(auth)
 
-  const [user, error] = useAuthState(auth)
+
   const isAuthed = !!user
   useTheme()
 
@@ -38,7 +43,7 @@ export default function Header() {
         isAuthed &&
         <>
           <span className='credits' >
-            Credits: {credit}
+            Credits: {credits}
           </span>
           <Separator orientation='vertical' />
         </>
@@ -49,7 +54,10 @@ export default function Header() {
             <li>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button variant={'destructive'} size={'icon-sm'}>
+                  <Button
+                    variant={'destructive'}
+                    size={'icon-sm'}
+                    onClick={async () => await signOut(auth)}>
                     <DoorOpenIcon />
                   </Button>
                 </TooltipTrigger>
@@ -62,12 +70,19 @@ export default function Header() {
           :
           <>
             <li>
-              <Button size='sm' className='text-sm max-w-fit px-6'>
+              <Button
+                size='sm'
+                className='text-sm max-w-fit px-6'
+                onClick={() => router.push("/login")}>
                 Log in
               </Button>
             </li>
             <li>
-              <Button variant={'ghost'} size='sm' className='text-sm max-w-fit px-6'>
+              <Button
+                variant={'ghost'}
+                size='sm'
+                className='text-sm max-w-fit px-6'
+                onClick={() => router.push("/signup")}>
                 Sign Up
               </Button>
             </li>

@@ -1,12 +1,12 @@
 'use client'
 import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
-import { auth, googleProvider } from "@/lib/firebase";
+import { auth, googleProvider } from "@/lib/firebase/client";
 import { useRouter } from "next/navigation"; // Changed from redirect
-import { useAuthState } from 'react-firebase-hooks/auth'
+import { useAuthState, useSignInWithEmailAndPassword, useSignInWithGoogle } from 'react-firebase-hooks/auth'
 import { useEffect, useState } from 'react'
 import { Button } from "@/components/ui/button";
-import { signInWithPopup, signInWithEmailAndPassword, User } from '@firebase/auth'
+import { User } from '@firebase/auth'
 import { Field, FieldError, FieldGroup, FieldLabel, FieldSet } from "@/components/ui/field";
 import { Controller, SubmitErrorHandler, useForm } from "react-hook-form";
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -14,7 +14,7 @@ import z from "zod";
 import { loginFormSchema } from "@/lib/input-schemas";
 import { toast } from "sonner";
 import { Separator } from "@/components/ui/separator";
-import { FaGoogle } from "react-icons/fa6";
+import { FcGoogle } from "react-icons/fc";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 
 enum SignInMethod {
@@ -24,9 +24,10 @@ enum SignInMethod {
 
 export default function Page() {
   const router = useRouter()
-  const [user, loading, error] = useAuthState(auth)
   const [loginMethod, setLoginMethod] = useState<SignInMethod>(SignInMethod.EMAIL)
   const [isLoggingIn, setIsLoggingIn] = useState(false)
+  const [signInWithEmailAndPassword] = useSignInWithEmailAndPassword(auth)
+  const [signInWithGoogle, user, loading, error] = useSignInWithGoogle(auth)
 
 
   const { control, handleSubmit } = useForm<z.infer<typeof loginFormSchema>>({
@@ -38,17 +39,15 @@ export default function Page() {
   })
 
 
-  // useEffect(() => {
-  //   if (user) {
-  //     toast.info("You're already logged in. Redirecting...")
-  //     router.push('/success')
-  //   }
-  // }, [user, router])
+  useEffect(() => {
+    if (user) {
+      toast.info("You're already logged in. Redirecting...")
+      router.push('/post/create')
+    }
+  }, [user, router])
 
-  if (loading) return <Spinner />
   if (error) {
     toast.error('Auth state error:' + error)
-    return <div>Authentication error. Please refresh.</div>
   }
   const onError: SubmitErrorHandler<z.infer<typeof loginFormSchema>> = (errors) => {
     let message = ""
@@ -62,42 +61,21 @@ export default function Page() {
   const onSubmit = async ({ email, password }: z.infer<typeof loginFormSchema>) => {
     if (isLoggingIn) return
 
-    function methodToString(method: SignInMethod) {
-      switch (method) {
-        case SignInMethod.EMAIL:
-          return "Email"
-        case SignInMethod.GOOGLE:
-          return "Google"
-      }
-    }
-
-    toast.info(`You're logging in with ${methodToString(loginMethod)}`)
-
     setIsLoggingIn(true)
     try {
-      let userResult: User | null = null
-
-      switch (loginMethod) {
-        case SignInMethod.EMAIL:
-          if (!email || !password) {
-            toast.error('Please enter email and password')
-            setIsLoggingIn(false)
-            return
-          }
-          const resEmail = await signInWithEmailAndPassword(auth, email, password)
-          userResult = resEmail.user
-          break
-
-        case SignInMethod.GOOGLE:
-          const resGoogle = await signInWithPopup(auth, googleProvider)
-          userResult = resGoogle.user
-          break
-
-        default:
-          throw new Error("METHOD IS NOT SUPPORTED")
+      if (!email || !password) {
+        toast.error('Please enter email and password')
+        setIsLoggingIn(false)
+        return
       }
+      const result = await signInWithEmailAndPassword(email, password)
+      if (!result) {
+        toast.error("Login Failed.")
+        return
+      }
+      const user = result.user
 
-      console.log('Login successful:', userResult?.email)
+      console.log('Login successful:', user.email)
       toast.success("Logged in successfully")
     } catch (e: any) {
       switch (e?.code) {
@@ -140,7 +118,7 @@ export default function Page() {
         <CardContent>
           <form
             onSubmit={handleSubmit(onSubmit, onError)}
-            className="space-y-4 gap-y-8"
+            className="gap-y-4"
             id="login-form"
           >
             <FieldGroup>
@@ -154,6 +132,7 @@ export default function Page() {
                       <Input
                         {...field}
                         id={field.name}
+                        disabled={isLoggingIn || loading}
                         aria-invalid={fieldState.invalid}
                         type="email"
                       />
@@ -173,6 +152,7 @@ export default function Page() {
                       <Input
                         {...field}
                         id={field.name}
+                        disabled={isLoggingIn || loading}
                         aria-invalid={fieldState.invalid}
                         type="password"
                       />
@@ -192,12 +172,12 @@ export default function Page() {
           >
             <Button
               type='submit'
-              disabled={isLoggingIn}
+              disabled={isLoggingIn || loading}
               className="w-full"
               form="login-form"
             >
               <span className='inline-flex items-center gap-x-6'>
-                {loginMethod === SignInMethod.EMAIL && isLoggingIn
+                {loginMethod === SignInMethod.EMAIL && (isLoggingIn || loading)
                   ? <><Spinner /> Logging in...</>
                   : <>Log in</>
                 }
@@ -207,15 +187,17 @@ export default function Page() {
             <Separator />
 
             <Button
-              onClick={() => setLoginMethod(SignInMethod.GOOGLE)}
-              disabled={isLoggingIn}
-              className='bg-blue-500 text-white w-full hover:bg-blue-400'
+              onClick={() => signInWithGoogle()}
+              disabled={isLoggingIn || loading}
+              variant={'outline'}
+              type='button'
+              className='text-white w-full hover:brightness-110 py-5'
               form="login-form"
             >
               <span className='inline-flex items-center gap-x-6'>
-                {loginMethod === SignInMethod.GOOGLE && isLoggingIn
+                {(isLoggingIn || loading)
                   ? <><Spinner /> Signing...</>
-                  : <><FaGoogle /> Sign in With Google</>
+                  : <><FcGoogle className='size-6' /> Sign in With Google</>
                 }
               </span>
             </Button>

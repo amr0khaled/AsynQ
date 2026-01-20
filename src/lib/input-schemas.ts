@@ -16,3 +16,9 @@ export const signupFormSchema = z.object({
     .max(32, "Password must be at most 32 characters"),
   name: z.string(),
 })
+export const signupServerSchema = z.object({
+  id: z.string(),
+  email: z.email()
+    .min(6, 'Email must be at least 6 characters'),
+  name: z.string(),
+})
