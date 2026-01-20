@@ -1,14 +1,21 @@
+'use client'
 import DashboardHeader from "@/components/dashboard-header"
 import HistorySidebar from "@/components/history-sidebar"
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
-
-
+import { useAuth } from "@/hooks/use-auth"
+import { auth } from "@/lib/firebase/client"
+import { useRouter } from "next/navigation"
 
 type Props = {
   children: React.ReactNode
 }
 
 export default function Layout({ children }: Props) {
+  const { user } = useAuth(auth)
+  const router = useRouter()
+  if (!user) {
+    router.replace('/login')
+  }
   return <SidebarProvider>
     <HistorySidebar />
     <SidebarInset>

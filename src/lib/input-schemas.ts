@@ -1,4 +1,3 @@
-'use client'
 import z from 'zod'
 
 export const loginFormSchema = z.object({
@@ -17,7 +16,6 @@ export const signupFormSchema = z.object({
   name: z.string(),
 })
 export const signupServerSchema = z.object({
-  id: z.string(),
   email: z.email()
     .min(6, 'Email must be at least 6 characters'),
   name: z.string(),

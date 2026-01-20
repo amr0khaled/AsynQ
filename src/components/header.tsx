@@ -1,17 +1,15 @@
 'use client'
 import '@/styles/components/header.css'
 import localFont from "next/font/local";
-import { useContext, useEffect, useState } from 'react';
 import { Button } from './ui/button';
 import { Tooltip, TooltipTrigger, TooltipContent } from './ui/tooltip';
 import { DoorOpenIcon } from 'lucide-react';
-import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth } from '@/lib/firebase/client';
 import { Separator } from './ui/separator';
 import { useTheme } from '@/hooks/use-theme';
-import { signOut } from '@firebase/auth';
 import { useRouter } from 'next/navigation';
-import { CreditContext, useCredits } from '@/hooks/use-credits';
+import { useCredits } from '@/hooks/use-credits';
+import { useAuth } from '@/hooks/use-auth';
 export const kyivType = localFont({
   src: '../assets/fonts/KyivTypeSans-VarGX.ttf'
 })
@@ -19,7 +17,7 @@ export const kyivType = localFont({
 export default function Header() {
   const router = useRouter()
   const { credits } = useCredits()
-  const [user] = useAuthState(auth)
+  const { signOut, user } = useAuth(auth)
 
 
   const isAuthed = !!user
@@ -57,7 +55,7 @@ export default function Header() {
                   <Button
                     variant={'destructive'}
                     size={'icon-sm'}
-                    onClick={async () => await signOut(auth)}>
+                    onClick={async () => await signOut()}>
                     <DoorOpenIcon />
                   </Button>
                 </TooltipTrigger>
