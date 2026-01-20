@@ -35,7 +35,7 @@ export const POST = async (req: NextRequest) => {
     const identifier = req.headers.get('x-forwarded-for') || 'anonymous'
 
     // Check rate limit: 10 requests per minute
-    if (!checkRateLimit(identifier, 10, 60000)) {
+    if (!checkRateLimit(identifier, 5, 60000)) {
       const { resetIn } = getRateLimitInfo(identifier)
       return NextResponse.json(
         {
