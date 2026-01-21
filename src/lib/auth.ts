@@ -51,3 +51,38 @@ export async function checkUserAndReturnFromDB(req: NextRequest) {
     return 401
   }
 }
+<<<<<<< Updated upstream
+=======
+
+export async function getUserIdAndReturn(token: string | undefined) {
+  if (!token) return null
+  try {
+    const auth = getAuth()
+    const { uid } = await auth.verifyIdToken(token)
+    // TODO: Add a reauthentication of revoked token
+    return uid
+  } catch (e: any) {
+    // TODO: Handle revoked token
+    console.error('Error in checking user token', e.code)
+    return null
+  }
+}
+export async function getUserAndReturnFromDB(token: string | undefined) {
+  if (!token) return null
+
+  try {
+    const auth = getAuth()
+    const { uid, email } = await auth.verifyIdToken(token)
+    const user = await prisma.user.findUnique({
+      where: {
+        id: uid,
+        email,
+      }
+    })
+    if (!user) return null
+    return user
+  } catch {
+    return null
+  }
+}
+>>>>>>> Stashed changes

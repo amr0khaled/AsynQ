@@ -1,4 +1,5 @@
 'use client'
+<<<<<<< Updated upstream
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -214,5 +215,17 @@ export default function Page() {
           </Card>
       )}
     </div>
+=======
+import '@/styles/pages/ai.css'
+import AiChat from '@/components/ai-chat'
+import { useChat } from '@/hooks/use-chat'
+
+export default function Page() {
+  const { post } = useChat()
+  return (
+    <>
+      <AiChat key={post?.id || 'new'} />
+    </>
+>>>>>>> Stashed changes
   )
 }

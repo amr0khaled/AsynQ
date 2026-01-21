@@ -11,7 +11,7 @@ export const POST = async (req: NextRequest) => {
   }
 
   if (user.credits < 1) return NextResponse.json({
-    errors: [{ credits: "You don't have enough credits" }]
+    errors: [{ credits: "You don't have enough credits. Try again Tomorrow." }]
   }, { status: 400 })
 
   try {
