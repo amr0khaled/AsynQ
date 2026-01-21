@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Field, FieldError, FieldGroup, FieldLabel } from '@/components/ui/field'
 import { Card, CardContent, CardFooter } from '@/components/ui/card'
 import z from 'zod'
-import { Controller, useForm } from 'react-hook-form'
+import { Controller, SubmitErrorHandler, useForm } from 'react-hook-form'
 import { Edit3 } from 'lucide-react'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -18,12 +18,8 @@ import remarkGFM from 'remark-gfm'
 import api from '@/lib/axios.client'
 import { toast } from 'sonner'
 import '@/styles/pages/ai.css'
-import { useAuthState } from 'react-firebase-hooks/auth'
-import { auth } from '@/lib/firebase/client'
-
-type Post = {
-  id?: string
-}
+import { useChat } from '@/hooks/use-chat'
+import { updatePostServerSchema } from '@/lib/input-schemas'
 
 const righteous = Righteous({
   weight: ['400'],
@@ -36,29 +32,30 @@ const contentSchema = z.object({
 })
 
 export default function Page() {
-  const [content, setContent] = useState('')
-  const [response, setResponse] = useState('')
+  const { post, isPending, newPost, updatePost } = useChat()
+  const [prompt, setPrompt] = useState(post?.prompt ?? '')
+  const [content, setContent] = useState(post?.content ?? '')
   const [isStreaming, setIsStreaming] = useState(false)
   const [error, setError] = useState('')
   const [editMode, setEditMode] = useState(false)
-  const { control, } = useForm<z.infer<typeof contentSchema>>({
-    resolver: zodResolver(contentSchema),
+  const { control, handleSubmit } = useForm<z.infer<typeof updatePostServerSchema>>({
+    resolver: zodResolver(updatePostServerSchema),
     defaultValues: {
-      content: response
+      content
     }
   })
-  const debouncedContent = useDebounce(content, 700)
+  const debouncedPrompt = useDebounce(prompt, 700)
 
   const streamGemini = async () => {
-    if (!debouncedContent.trim()) return
+    if (!debouncedPrompt.trim()) return
 
     setIsStreaming(true)
-    setResponse('')
+    setContent('')
     setError('')
 
     try {
       const res = await api.post('/api/ai', {
-        content: debouncedContent,
+        content: debouncedPrompt,
       }, {
         adapter: 'fetch',
         responseType: 'stream',
@@ -66,10 +63,6 @@ export default function Page() {
           'Content-Type': 'application/json',
         },
       })
-
-      // if (!res.config) {
-      //   throw new Error(`HTTP error! status: ${res.status}`)
-      // }
 
       const reader = res.data?.getReader()
       const decoder = new TextDecoder()
@@ -80,7 +73,13 @@ export default function Page() {
 
       while (true) {
         const { done, value } = await reader.read()
-        if (done) break
+        if (done) {
+          newPost({
+            prompt,
+            content
+          })
+          break
+        }
 
         const chunk = decoder.decode(value, { stream: true })
         const lines = chunk.split('\n\n')
@@ -92,7 +91,7 @@ export default function Page() {
             if (data.error) {
               setError(data.error)
             } else if (data.text) {
-              setResponse(prev => prev + data.text)
+              setContent(prev => prev + data.text)
             }
           }
         }
@@ -106,6 +105,16 @@ export default function Page() {
     }
   }
 
+  const onError: SubmitErrorHandler<z.infer<typeof updatePostServerSchema>> = (errors) => {
+    let message = ""
+    for (const error of Object.keys(errors)) {
+      if (Object.hasOwn(errors, error)) {
+        message += `${(errors as any)[error].message}\n`
+      }
+    }
+    toast.error('Form has Validation Errors. ' + message);
+  }
+
   return (
     <div className="max-w-6xl min-w-3xl mx-auto p-6 space-y-4">
       <div className='mx-auto max-w-2xl flex flex-col gap-y-2 justify-start mb-10'>
@@ -113,8 +122,8 @@ export default function Page() {
 
         <div className="flex gap-2">
           <Input
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
+            value={prompt}
+            onChange={(e) => setPrompt(e.target.value)}
             placeholder="What caption do you need?"
             onKeyDown={(e) => {
               if (e.key === 'Enter' && !e.shiftKey) {
@@ -123,14 +132,8 @@ export default function Page() {
               }
             }}
             disabled={isStreaming}
-            className="flex-1 min-w-lg max-w-xl"
+            className="min-w-lg max-w-xl"
           />
-          <Button
-            onClick={streamGemini}
-            disabled={isStreaming || !content.trim()}
-          >
-            {isStreaming ? <Spinner /> : 'Send'}
-          </Button>
         </div>
 
       </div>
@@ -140,13 +143,13 @@ export default function Page() {
         </div>
       )}
 
-      {response && (
+      {content && (
         !editMode ?
           <div className='flex flex-col items-center'>
             <div className="p-4 text-white/85 bg-gray-50 dark:bg-transparent border rounded-lg max-w-10/12">
               <div className="whitespace-pre-wrap text-wrap markdown">
                 <ReactMarkDown remarkPlugins={[remarkGFM]} >
-                  {response}
+                  {content}
                 </ReactMarkDown>
               </div>
               {isStreaming && <span className="inline-block w-2 h-5 bg-gray-800 animate-pulse ml-1" />}
@@ -170,7 +173,9 @@ export default function Page() {
           </div>
           : <Card className='min-w-96 w-full border-transparent pt-0'>
             <CardContent>
-              <form id='edit-post-form'>
+              <form
+                onSubmit={handleSubmit(updatePost, onError)}
+                id='edit-post-form'>
                 <FieldGroup>
                   <Controller
                     name="content"

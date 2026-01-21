@@ -3,8 +3,8 @@ import prisma from "./prisma";
 import { getAuth } from "firebase-admin/auth";
 
 
-export async function checkUser(req: NextRequest) {
-  const authHeader = req.headers.get("Authorization")
+export async function checkUser(headers: Headers) {
+  const authHeader = headers.get("Authorization")
   const token = authHeader?.split("Bearer ")[1]
   if (!token) return 401
 
@@ -16,8 +16,8 @@ export async function checkUser(req: NextRequest) {
     return 401
   }
 }
-export async function checkUserAndReturn(req: NextRequest) {
-  const authHeader = req.headers.get("Authorization")
+export async function checkUserAndReturn(headers: Headers) {
+  const authHeader = headers.get("Authorization")
   const token = authHeader?.split("Bearer ")[1]
   if (!token) return false
 
@@ -31,8 +31,8 @@ export async function checkUserAndReturn(req: NextRequest) {
   }
 }
 
-export async function checkUserAndReturnFromDB(req: NextRequest) {
-  const authHeader = req.headers.get("Authorization")
+export async function checkUserAndReturnFromDB(headers: Headers) {
+  const authHeader = headers.get("Authorization")
   const token = authHeader?.split("Bearer ")[1]
   if (!token) return 401
 
@@ -49,5 +49,24 @@ export async function checkUserAndReturnFromDB(req: NextRequest) {
     return user
   } catch {
     return 401
+  }
+}
+
+export async function getUserAndReturnFromDB(token: string | undefined) {
+  if (!token) return null
+
+  try {
+    const auth = getAuth()
+    const { uid, email } = await auth.verifyIdToken(token)
+    const user = await prisma.user.findUnique({
+      where: {
+        id: uid,
+        email,
+      }
+    })
+    if (!user) return null
+    return user
+  } catch {
+    return null
   }
 }

@@ -5,7 +5,7 @@ import { checkRateLimit, getRateLimitInfo } from "@/lib/rate-limiter"
 import { NextRequest, NextResponse } from "next/server"
 
 export const POST = async (req: NextRequest) => {
-  const user = await checkUserAndReturnFromDB(req)
+  const user = await checkUserAndReturnFromDB(req.headers)
   if (typeof user === 'number') {
     return NextResponse.json(null, { status: 401 })
   }

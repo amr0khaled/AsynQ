@@ -20,3 +20,12 @@ export const signupServerSchema = z.object({
     .min(6, 'Email must be at least 6 characters'),
   name: z.string(),
 })
+
+export const newPostServerSchema = z.object({
+  prompt: z.string(),
+  content: z.string()
+})
+export const updatePostServerSchema = z.object({
+  id: z.string(),
+  content: z.string()
+})
