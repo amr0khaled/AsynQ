@@ -14,7 +14,7 @@ api.interceptors.request.use(async (req) => {
     req.headers.set("Authorization", `Bearer ${token}`)
     if (!hasCookie('token')) {
       setCookie("token", token, {
-        maxAge: 1000 * 3,
+        maxAge: 1000 * 60 * 60 * 2, // 2hours
         secure: process.env.NODE_ENV === 'production',
         path: '/',
         sameSite: 'strict'

@@ -1,5 +1,5 @@
 'use client'
-import { createContext, Dispatch, useContext, useState, useTransition } from "react"
+import { createContext, Dispatch, useCallback, useContext, useState, useTransition } from "react"
 import { deletePost, getPost, getPosts, newPost, updatePost } from "./use-posts"
 import { toast } from "sonner"
 import { Post, PostDelete, PostUpdate, PostCreate } from "@/lib/types"
@@ -49,11 +49,11 @@ export default function Chat({ children }: Props) {
     }
     return true
   }
-  const loadPosts = () => {
+  const loadPosts = useCallback(() => {
     start(async () => {
       setPosts(await getPosts())
     })
-  }
+  }, [])
 
   const changePost = (id: string) => {
     const post = posts.find((post) => post.id === id)
@@ -77,7 +77,7 @@ export default function Chat({ children }: Props) {
       if (!checkPost(_post)) return
       _post = _post as Post
       setPost(_post)
-      setPosts(posts => [...posts, _post])
+      setPosts(posts => [_post, ...posts])
     })
   }
   const updateCurrentPost = (post: PostUpdate) => {

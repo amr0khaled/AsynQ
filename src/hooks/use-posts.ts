@@ -1,7 +1,7 @@
 'use server'
 import prisma from "@/lib/prisma"
 import type { Post, PostDelete, PostUpdate, PostCreate } from "@/lib/types"
-import { getUserAndReturnFromDB } from "@/lib/auth"
+import { getUserIdAndReturn } from "@/lib/auth"
 import { cookies } from "next/headers"
 import { newPostServerSchema, updatePostServerSchema } from "@/lib/input-schemas"
 import z from "zod"
@@ -10,35 +10,37 @@ export async function getPosts(): Promise<Post[]> {
   const cookieStore = await cookies()
   const token = cookieStore.get("token")
   if (!token) return []
-  const user = await getUserAndReturnFromDB(token.value)
-  if (!user) return []
+  const userId = await getUserIdAndReturn(token.value)
+  if (!userId) return []
   return await prisma.post.findMany({
     where: {
-      userId: user.id
+      userId
+    },
+    take: 10,
+    orderBy: {
+      createdAt: 'desc'
     },
     omit: {
       userId: true,
       content: true
     },
   })
-
 }
 
 export async function getPost(id: string): Promise<Post | null> {
   const cookieStore = await cookies()
   const token = cookieStore.get("token")
   if (!token) return null
-  const user = await getUserAndReturnFromDB(token.value)
-  if (!user) return null
+  const userId = await getUserIdAndReturn(token.value)
+  if (!userId) return null
   return await prisma.post.findUnique({
     where: {
-      userId: user.id,
+      userId,
       id
     },
     omit: {
       userId: true
     }
-
   })
 }
 
@@ -46,8 +48,8 @@ export async function newPost(post: PostCreate): Promise<Post | null | string> {
   const cookieStore = await cookies()
   const token = cookieStore.get("token")
   if (!token) return null
-  const user = await getUserAndReturnFromDB(token.value)
-  if (!user) return null
+  const userId = await getUserIdAndReturn(token.value)
+  if (!userId) return null
   const { data, success, error } = newPostServerSchema.safeParse(post)
   if (!success) return z.prettifyError(error)
   const { prompt, content } = data
@@ -55,7 +57,7 @@ export async function newPost(post: PostCreate): Promise<Post | null | string> {
     data: {
       prompt,
       content,
-      userId: user.id
+      userId
     },
     omit: {
       userId: true
@@ -67,14 +69,14 @@ export async function updatePost(post: PostUpdate): Promise<Post | null | string
   const cookieStore = await cookies()
   const token = cookieStore.get("token")
   if (!token) return null
-  const user = await getUserAndReturnFromDB(token.value)
-  if (!user) return null
+  const userId = await getUserIdAndReturn(token.value)
+  if (!userId) return null
   const { data, success, error } = updatePostServerSchema.safeParse(post)
   if (!success) return z.prettifyError(error)
   const { id, content } = data
   return await prisma.post.update({
     where: {
-      userId: user.id,
+      userId,
       id
     },
     data: {
@@ -89,12 +91,12 @@ export async function deletePost(id: PostDelete): Promise<boolean> {
   const cookieStore = await cookies()
   const token = cookieStore.get("token")
   if (!token) return false
-  const user = await getUserAndReturnFromDB(token.value)
-  if (!user) return false
+  const userId = await getUserIdAndReturn(token.value)
+  if (!userId) return false
 
   await prisma.post.delete({
     where: {
-      userId: user.id,
+      userId,
       id
     },
   })
