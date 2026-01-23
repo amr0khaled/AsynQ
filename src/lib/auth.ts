@@ -51,8 +51,6 @@ export async function checkUserAndReturnFromDB(req: NextRequest) {
     return 401
   }
 }
-<<<<<<< Updated upstream
-=======
 
 export async function getUserIdAndReturn(token: string | undefined) {
   if (!token) return null
@@ -85,4 +83,3 @@ export async function getUserAndReturnFromDB(token: string | undefined) {
     return null
   }
 }
->>>>>>> Stashed changes

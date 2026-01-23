@@ -1,12 +1,4 @@
 'use client'
-<<<<<<< Updated upstream
-import { Search } from "lucide-react";
-import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarTrigger, useSidebar } from "./ui/sidebar";
-
-
-export default function HistorySidebar() {
-  const { state } = useSidebar()
-=======
 import { EllipsisVertical, Search } from "lucide-react";
 import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuAction, SidebarMenuButton, SidebarMenuItem, SidebarMenuSkeleton, SidebarTrigger, useSidebar } from "./ui/sidebar";
 import { useEffect } from "react";
@@ -25,7 +17,6 @@ export default function HistorySidebar() {
     loadPosts()
   }, [loading, user, loadPosts])
 
->>>>>>> Stashed changes
   return <Sidebar variant="inset" collapsible="icon">
     <SidebarHeader>
       <SidebarMenu className='flex flex-row items-center justify-between'>
@@ -50,8 +41,6 @@ export default function HistorySidebar() {
         <SidebarGroupLabel>History</SidebarGroupLabel>
         <SidebarGroupContent>
           <SidebarMenu>
-<<<<<<< Updated upstream
-=======
             {
               (isPending && posts.length < 1) ?
                 Array.from({ length: 10 }).map((_, index) => (
@@ -73,7 +62,6 @@ export default function HistorySidebar() {
                   </SidebarMenuItem>
                 ))
             }
->>>>>>> Stashed changes
           </SidebarMenu>
         </SidebarGroupContent>
       </SidebarGroup>
