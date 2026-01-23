@@ -1,9 +1,8 @@
 'use client'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@radix-ui/react-tooltip'
 import ReactMarkDown from 'react-markdown'
 import remarkGFM from 'remark-gfm'
 import { Button } from './ui/button'
-import { Edit3 } from 'lucide-react'
+import { Copy, Edit3 } from 'lucide-react'
 import { Dispatch, SetStateAction, useState } from 'react'
 import { Card, CardContent, CardFooter } from './ui/card'
 import { FieldError, FieldGroup, Field } from './ui/field'
@@ -16,6 +15,9 @@ import { toast } from 'sonner'
 import { updatePost } from '@/hooks/use-posts'
 import sanitize from 'sanitize-html'
 import { useChat } from '@/hooks/use-chat'
+import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip'
+import { Spinner } from './ui/spinner'
+import { Input } from './ui/input'
 
 
 type Props = {
@@ -23,33 +25,45 @@ type Props = {
   content?: string
   setContent: Dispatch<SetStateAction<string>>
 }
-export default function AiResponseTextarea({ isStreaming, content }: Props) {
+export default function AiResponseTextarea({ isStreaming, content, setContent }: Props) {
   const { post } = useChat()
   const [isEditing, setEditMode] = useState(false)
   const { control, handleSubmit } = useForm<z.infer<typeof updatePostServerSchema>>({
     resolver: zodResolver(updatePostServerSchema),
     defaultValues: {
-      content
+      content,
+      id: post?.id
     }
   })
   const onError: SubmitErrorHandler<z.infer<typeof updatePostServerSchema>> = (errors) => {
-    let message = ""
-    for (const error of Object.keys(errors)) {
-      if (Object.hasOwn(errors, error)) {
-        message += `${(errors as any)[error].message}\n`
-      }
-    }
-    toast.error('Form has Validation Errors. ' + message);
+    toast.error('Form has Validation Errors.', {
+      description: <>
+        {
+          Object.keys(errors).map((error) => {
+            if (Object.hasOwn(errors, error)) {
+              return <span>{error}: {(errors as any)[error].message}</span>
+            }
+          })
+        }
+      </>
+    });
   }
   if (isEditing) return <Card className='min-w-96 w-full border-transparent pt-0'>
     <CardContent>
       <form
         onSubmit={handleSubmit(({ content }) => {
           if (!post?.id) return
-          updatePost({
+          toast.promise(updatePost({
             id: post.id,
             content: sanitize(content)
-          })
+          }),
+            {
+              loading: <Spinner />,
+              success: "Updated post successfully",
+            }
+          )
+          setContent(content || '')
+          setEditMode(false)
         }, onError)}
         id='edit-post-form'>
         <FieldGroup>
@@ -62,6 +76,19 @@ export default function AiResponseTextarea({ isStreaming, content }: Props) {
                 id={field.name}
                 aria-invalid={fieldState.invalid}
                 className='resize-none min-h-64'
+              />
+            </Field>
+            }
+          />
+          <Controller
+            name="id"
+            control={control}
+            render={({ field, fieldState }) => <Field>
+              <Input
+                {...field}
+                id={field.name}
+                aria-invalid={fieldState.invalid}
+                className='hidden'
               />
               {fieldState.invalid && (
                 <FieldError errors={[fieldState.error]} />
@@ -102,19 +129,44 @@ export default function AiResponseTextarea({ isStreaming, content }: Props) {
       </div>
       {isStreaming && <span className="inline-block w-2 h-5 bg-gray-800 animate-pulse ml-1" />}
     </div>
-    <div className='w-full flex justify-end items-center'>
+    <div className='w-full flex justify-end items-center gap-x-2'>
       <Tooltip>
         <TooltipTrigger asChild>
           <Button
             variant={'ghost'}
             size='icon-sm'
+            className='hover:translate-0'
             onClick={() => setEditMode(true)}
           >
             <Edit3 />
           </Button>
         </TooltipTrigger>
-        <TooltipContent side='left'>
+        <TooltipContent side='bottom'>
           <p>Edit</p>
+        </TooltipContent>
+      </Tooltip>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            variant={'ghost'}
+            size='icon-sm'
+            className='hover:translate-0'
+            onClick={async () => {
+              toast.promise(
+                navigator.clipboard.writeText(content || await navigator.clipboard.readText()),
+                {
+                  loading: <Spinner />,
+                  success: `Copied to clipboard.`,
+                  error: "Couldn't copy to clipboard.",
+                }
+              )
+            }}
+          >
+            <Copy />
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent side='bottom'>
+          <p>Copy</p>
         </TooltipContent>
       </Tooltip>
     </div>

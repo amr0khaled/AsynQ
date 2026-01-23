@@ -1,21 +1,23 @@
 'use client'
-import { EllipsisVertical, Search } from "lucide-react";
+import { EllipsisVertical, Search, Trash } from "lucide-react";
 import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuAction, SidebarMenuButton, SidebarMenuItem, SidebarMenuSkeleton, SidebarTrigger, useSidebar } from "./ui/sidebar";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { auth } from "@/lib/firebase/client";
 import { useChat } from "@/hooks/use-chat";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu";
 
 
 export default function HistorySidebar() {
-  const { isPending, loadPosts, posts, changePost, post } = useChat()
+  const {
+    isPending,
+    posts,
+    post,
+    loadPosts,
+    changePost,
+    deletePost
+  } = useChat()
   const { state } = useSidebar()
-  const { loading, user } = useAuth(auth)
-
-  useEffect(() => {
-    if (loading && !user) return
-    loadPosts()
-  }, [loading, user, loadPosts])
 
   return <Sidebar variant="inset" collapsible="icon">
     <SidebarHeader>
@@ -23,7 +25,7 @@ export default function HistorySidebar() {
         <SidebarMenuItem>
           <SidebarTrigger
             variant={'primary'}
-            className='self-end hover:-translate-0 size-8'
+            className='self-end hover:translate-0 size-8'
           />
         </SidebarMenuItem>
         <SidebarMenuItem
@@ -51,14 +53,24 @@ export default function HistorySidebar() {
                 :
                 posts.map(({ id, prompt }) => (
                   <SidebarMenuItem onClick={() => changePost(id)} key={id}>
-                    <SidebarMenuButton isActive={post?.id === id}>
+                    <SidebarMenuButton className='transition-colors duration-100' isActive={post?.id === id}>
                       <span className='w-48 text-xs truncate'>
                         {prompt}
                       </span>
                     </SidebarMenuButton>
-                    <SidebarMenuAction>
-                      <EllipsisVertical className='size-0' />
-                    </SidebarMenuAction>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <SidebarMenuAction>
+                          <EllipsisVertical className='size-0' />
+                        </SidebarMenuAction>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent>
+                        <DropdownMenuItem variant="destructive" onClick={() => deletePost(id)}>
+                          <Trash />
+                          Delete
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </SidebarMenuItem>
                 ))
             }

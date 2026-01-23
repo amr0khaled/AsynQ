@@ -1,8 +1,11 @@
 'use client'
-import { createContext, Dispatch, useCallback, useContext, useState, useTransition } from "react"
+import { createContext, Dispatch, useCallback, useContext, useEffect, useRef, useState, useTransition } from "react"
 import { deletePost, getPost, getPosts, newPost, updatePost } from "./use-posts"
 import { toast } from "sonner"
-import { Post, PostDelete, PostUpdate, PostCreate } from "@/lib/types"
+import { type Post, type PostDelete, type PostUpdate, type PostCreate, type ErrorActionResponse, CANNOT_CREATE_POST, CANNOT_UPDATE_POST, CANNOT_DETETE_POST, ID_TOKEN_EXPIRED } from "@/lib/types"
+import { auth } from "@/lib/firebase/client"
+import { useReauthUser } from "./use-reauth"
+import { useAuth } from "./use-auth"
 
 type ChatContextValue = {
   post: Post | null
@@ -39,30 +42,32 @@ export default function Chat({ children }: Props) {
   const [post, setPost] = useState<Post | null>(null)
   const [posts, setPosts] = useState<Post[]>([])
   const [isPending, start] = useTransition()
+  const { loading, user, reauth } = useAuth(auth)
 
-
-  const checkPost = (post: Post | null | string) => {
-    if (!post) return false
-    if (typeof post === 'string') {
-      toast.error(post)
-      return false
+  const errorHandler = async ({ message, code }: ErrorActionResponse) => {
+    toast.error(`${code}: ${message}`)
+    if (code === ID_TOKEN_EXPIRED.code) {
+      reauth()
     }
-    return true
   }
   const loadPosts = useCallback(() => {
     start(async () => {
-      setPosts(await getPosts())
+      const res = await getPosts()
+      if (!res.success) return await errorHandler(res)
+      setPosts(res.data)
     })
   }, [])
 
-  const changePost = (id: string) => {
+  const changePost = useCallback((id: string) => {
     const post = posts.find((post) => post.id === id)
     if (!post) return
     if (post.content) {
       setPost(post)
     } else {
       start(async () => {
-        const fullPost = await getPost(id)
+        const res = await getPost(id)
+        if (!res.success) return await errorHandler(res)
+        const fullPost = res.data
         if (!fullPost) return
         setPost(fullPost)
         setPosts((posts) =>
@@ -70,21 +75,23 @@ export default function Chat({ children }: Props) {
         )
       })
     }
-  }
-  const createPost = (post: PostCreate) => {
+  }, [])
+  const createPost = useCallback((post: PostCreate) => {
     start(async () => {
-      let _post = await newPost(post)
-      if (!checkPost(_post)) return
-      _post = _post as Post
+      const res = await newPost(post)
+      if (!res.success) return await errorHandler(res)
+      const _post = res.data
+      if (!_post) return await errorHandler(CANNOT_CREATE_POST)
       setPost(_post)
       setPosts(posts => [_post, ...posts])
     })
-  }
-  const updateCurrentPost = (post: PostUpdate) => {
+  }, [])
+  const updateCurrentPost = useCallback((post: PostUpdate) => {
     start(async () => {
-      let _post = await updatePost(post)
-      if (!checkPost(_post)) return
-      _post = _post as Post
+      const res = await updatePost(post)
+      if (!res.success) return await errorHandler(res)
+      const _post = res.data
+      if (!_post) return await errorHandler(CANNOT_UPDATE_POST)
       setPost(_post)
       setPosts(posts => {
         const index = posts.findIndex(({ id }) => id === post.id)
@@ -95,11 +102,11 @@ export default function Chat({ children }: Props) {
         ]
       })
     })
-  }
-  const deleteAPost = (postId: PostDelete) => {
+  }, [])
+  const deleteAPost = useCallback((postId: PostDelete) => {
     start(async () => {
-      const success = await deletePost(postId)
-      if (!success) return
+      const res = await deletePost(postId)
+      if (!res.success) return await errorHandler(CANNOT_DETETE_POST)
 
       if (post && post.id === postId) {
         setPost(null)
@@ -107,7 +114,19 @@ export default function Chat({ children }: Props) {
 
       setPosts(posts => posts.filter(({ id }) => id !== postId))
     })
-  }
+  }, [])
+  const fetchedUserId = useRef<string | null>(null)
+  useEffect(() => {
+    if (loading || !user?.uid) {
+      return;
+    }
+    if (fetchedUserId.current === user.uid) {
+      return;
+    }
+    fetchedUserId.current = user.uid;
+    loadPosts();
+
+  }, [loading, user?.uid, loadPosts]);
 
   return <ChatContext.Provider value={{
     post,

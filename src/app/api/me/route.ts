@@ -1,12 +1,13 @@
 import { checkUserAndReturn } from "@/lib/auth";
 import prisma from "@/lib/prisma";
-import { getAuth } from "firebase-admin/auth";
+import { ActionResponse, NOT_FOUND } from "@/lib/types";
 import { NextRequest, NextResponse } from "next/server";
 
 
 export async function GET(req: NextRequest) {
-  const uid = await checkUserAndReturn(req)
-  if (!uid) return NextResponse.json(null, { status: 401 })
+  const res = await checkUserAndReturn(req.headers)
+  if (!res.success) return NextResponse.json(res, { status: 401 })
+  const { data: uid } = res
   const user = await prisma.user.findUnique({
     where: {
       id: uid,
@@ -31,8 +32,9 @@ export async function GET(req: NextRequest) {
       })
     }
   }
-  if (!user) return NextResponse.json(null, { status: 401 })
+  if (!user) return NextResponse.json(NOT_FOUND, { status: 401 })
   return NextResponse.json({
-    credits: user.credits
-  })
+    success: true,
+    data: user.credits
+  } as ActionResponse<number>)
 }
