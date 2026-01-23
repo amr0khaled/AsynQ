@@ -13,7 +13,6 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
   measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID
 };
-console.info(firebaseConfig)
 
 // Google Authentication Provider
 const googleProvider = new GoogleAuthProvider()
@@ -22,7 +21,7 @@ const googleProvider = new GoogleAuthProvider()
 let analytics: Analytics;
 if (typeof window !== "undefined") {
   isSupported().then((yes) => {
-    if (yes) {
+    if (yes && process.env.NODE_ENV === 'production') {
       analytics = getAnalytics(getApp());
     }
   });

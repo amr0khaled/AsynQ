@@ -1,19 +1,15 @@
 import { prompt } from "@/lib/ai"
 import { checkUserAndReturnFromDB } from "@/lib/auth"
 import prisma from "@/lib/prisma"
-import { User } from "@/lib/prisma/client"
 import { checkRateLimit, getRateLimitInfo } from "@/lib/rate-limiter"
 import { NextRequest, NextResponse } from "next/server"
 
 export const POST = async (req: NextRequest) => {
-  const auth = await checkUserAndReturnFromDB(req)
-  if (typeof auth === 'number') {
-    return NextResponse.json(undefined, { status: auth })
-  }
-  const user: User = auth
-
+  const res = await checkUserAndReturnFromDB(req.headers)
+  if (!res.success) return NextResponse.json(res, { status: 401 })
+  const user = res.data
   if (user.credits < 1) return NextResponse.json({
-    errors: [{ credits: "You don't have enough credits" }]
+    errors: [{ credits: "You don't have enough credits. Try again Tomorrow." }]
   }, { status: 400 })
 
   try {
