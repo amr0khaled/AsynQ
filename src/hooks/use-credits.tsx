@@ -1,6 +1,7 @@
 'use client'
 import api from "@/lib/axios.client";
 import { auth } from "@/lib/firebase/client";
+import { ActionResponse } from "@/lib/types";
 import { AxiosError } from "axios";
 import { createContext, Dispatch, SetStateAction, useContext, useEffect, useLayoutEffect, useState } from "react";
 import { useAuthState } from "react-firebase-hooks/auth";
@@ -42,21 +43,11 @@ export default function Credits({ children }: Props) {
       return;
     }
     const sync = async () => {
-      try {
-        const res = await api.get("/api/me")
-        const { credits } = res.data as SyncCreditData
-        setCredits(credits)
-      } catch (e) {
-        if (e instanceof AxiosError) {
-          switch (e.status) {
-            case 401:
-              toast.error("Unauthorized. Try loging in")
-              break
-            default:
-              toast.error("Sync error. Maybe you are offline")
-          }
-        }
-      }
+      const res = await api.get("/api/me")
+      const action: ActionResponse<number> = res.data
+      if (!action.success) return toast.error(action.message)
+      const { data: credits } = action
+      setCredits(credits)
     }
     sync()
   }, [triggerSync, user, loading])

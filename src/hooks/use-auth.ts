@@ -4,7 +4,7 @@ import { useAuthState, useCreateUserWithEmailAndPassword, useSignInWithEmailAndP
 import { toast } from "sonner";
 import { errorNotifying } from "./use-error";
 import { FirebaseError } from "@firebase/app";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
 type AuthData = {
@@ -18,9 +18,10 @@ export const useAuth = (auth: Auth, forceRedirect: boolean = false) => {
   const [createUserWithEmailAndPassword] = useCreateUserWithEmailAndPassword(auth)
   const [signInWithGoogle] = useSignInWithGoogle(auth)
   const [signOut] = useSignOut(auth)
+  const [reauth, setReauth] = useState(false)
 
   useEffect(() => {
-    if (user && forceRedirect && !loading) {
+    if (!!user && forceRedirect && !loading && !reauth) {
       toast.info("You're already logged in. Redirecting...")
       router.push('/post/create')
     }
@@ -42,6 +43,7 @@ export const useAuth = (auth: Auth, forceRedirect: boolean = false) => {
       email: user.email,
       name: name ?? user.displayName
     })
+    setReauth(false)
     console.log('Login successful:', user.email)
     toast.success("Logged in successfully")
   }
@@ -76,6 +78,9 @@ export const useAuth = (auth: Auth, forceRedirect: boolean = false) => {
     signOut,
     user,
     loading,
-    error
+    error,
+    reauth: () => {
+      setReauth(true)
+    }
   }
 }

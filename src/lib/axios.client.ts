@@ -5,6 +5,7 @@ import { setCookie, hasCookie } from 'cookies-next/client'
 
 const api = x.create({
   allowAbsoluteUrls: false,
+  validateStatus: () => true,
   withCredentials: true
 })
 
@@ -12,14 +13,12 @@ api.interceptors.request.use(async (req) => {
   if (!!auth.currentUser) {
     const token = await auth.currentUser.getIdToken()
     req.headers.set("Authorization", `Bearer ${token}`)
-    if (!hasCookie('token')) {
-      setCookie("token", token, {
-        maxAge: 1000 * 3,
-        secure: process.env.NODE_ENV === 'production',
-        path: '/',
-        sameSite: 'strict'
-      })
-    }
+    setCookie("token", token, {
+      maxAge: 1000 * 60 * 60 * 2, // 2hours
+      secure: process.env.NODE_ENV === 'production',
+      path: '/',
+      sameSite: 'strict'
+    })
   }
   return req
 }, (e) => {

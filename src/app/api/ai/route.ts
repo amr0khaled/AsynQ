@@ -5,13 +5,11 @@ import { checkRateLimit, getRateLimitInfo } from "@/lib/rate-limiter"
 import { NextRequest, NextResponse } from "next/server"
 
 export const POST = async (req: NextRequest) => {
-  const user = await checkUserAndReturnFromDB(req.headers)
-  if (typeof user === 'number') {
-    return NextResponse.json(null, { status: 401 })
-  }
-
+  const res = await checkUserAndReturnFromDB(req.headers)
+  if (!res.success) return NextResponse.json(res, { status: 401 })
+  const user = res.data
   if (user.credits < 1) return NextResponse.json({
-    errors: [{ credits: "You don't have enough credits" }]
+    errors: [{ credits: "You don't have enough credits. Try again Tomorrow." }]
   }, { status: 400 })
 
   try {

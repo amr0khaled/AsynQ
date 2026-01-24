@@ -121,55 +121,57 @@ export default function AiResponseTextarea({ isStreaming, content, setContent }:
       </FieldGroup>
     </CardFooter>
   </Card >
-  return <div className='flex flex-col items-center'>
-    <div className="p-4 text-white/85 bg-gray-50 dark:bg-transparent border rounded-lg max-w-10/12">
-      <div className="text-wrap prose dark:prose-invert max-w-none">
-        <ReactMarkDown remarkPlugins={[remarkGFM]} components={components}>
-          {content}
-        </ReactMarkDown>
+  return <div className='flex flex-col items-center w-full'>
+    <div className='flex flex-col items-center gap-y-4 max-w-11/12'>
+      <div className="p-4 text-white/85 bg-gray-50 dark:bg-transparent border rounded-lg">
+        <div className="text-wrap prose dark:prose-invert max-w-none">
+          <ReactMarkDown remarkPlugins={[remarkGFM]} components={components}>
+            {content}
+          </ReactMarkDown>
+        </div>
+        {isStreaming && <span className="inline-block w-2 h-5 bg-gray-800 animate-pulse ml-1" />}
+      </div >
+      <div className='w-full flex justify-end items-center gap-x-2'>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant={'ghost'}
+              size='icon-sm'
+              className='hover:translate-0'
+              onClick={() => setEditMode(true)}
+            >
+              <Edit3 />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent side='bottom'>
+            <p>Edit</p>
+          </TooltipContent>
+        </Tooltip>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant={'ghost'}
+              size='icon-sm'
+              className='hover:translate-0'
+              onClick={async () => {
+                toast.promise(
+                  navigator.clipboard.writeText(content || await navigator.clipboard.readText()),
+                  {
+                    loading: <Spinner />,
+                    success: `Copied to clipboard.`,
+                    error: "Couldn't copy to clipboard.",
+                  }
+                )
+              }}
+            >
+              <Copy />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent side='bottom'>
+            <p>Copy</p>
+          </TooltipContent>
+        </Tooltip>
       </div>
-      {isStreaming && <span className="inline-block w-2 h-5 bg-gray-800 animate-pulse ml-1" />}
-    </div>
-    <div className='w-full flex justify-end items-center gap-x-2'>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button
-            variant={'ghost'}
-            size='icon-sm'
-            className='hover:translate-0'
-            onClick={() => setEditMode(true)}
-          >
-            <Edit3 />
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent side='bottom'>
-          <p>Edit</p>
-        </TooltipContent>
-      </Tooltip>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button
-            variant={'ghost'}
-            size='icon-sm'
-            className='hover:translate-0'
-            onClick={async () => {
-              toast.promise(
-                navigator.clipboard.writeText(content || await navigator.clipboard.readText()),
-                {
-                  loading: <Spinner />,
-                  success: `Copied to clipboard.`,
-                  error: "Couldn't copy to clipboard.",
-                }
-              )
-            }}
-          >
-            <Copy />
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent side='bottom'>
-          <p>Copy</p>
-        </TooltipContent>
-      </Tooltip>
     </div>
   </div>
 }
