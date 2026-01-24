@@ -1,10 +1,14 @@
 'use client'
+import SidebarHome from "@/components/sidebar-home";
 import { Button } from "@/components/ui/button";
+import { Sidebar, SidebarProvider } from "@/components/ui/sidebar";
+import { useIsMobile } from "@/hooks/use-mobile";
 import '@/styles/pages/home.css'
 import { useRouter } from "next/navigation";
 
 export default function Home() {
   const { push } = useRouter()
+
   return <section className='hero'>
     <p className='main-paragraph'>
       <span>
@@ -18,5 +22,5 @@ export default function Home() {
       <Button variant='secondary'>Learn more</Button>
       <Button variant='primary' onClick={() => push('/post/create')}>Get Started</Button>
     </div>
-  </section>;
+  </section>
 }

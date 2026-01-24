@@ -3,8 +3,8 @@
 @layer components {
   .header {
     @apply fixed z-50 bg-background/40;
-    @apply min-w-full h-16 px-6 py-2;
-    @apply flex items-center;
+    @apply w-full md:min-w-full h-16 md:px-6 md:py-2;
+    @apply flex flex-row items-center justify-center;
     @apply border-b border-white/15;
 
     .logo-container {
@@ -27,4 +27,6 @@
       }
     }
   }
+
+  .mobile {}
 }
