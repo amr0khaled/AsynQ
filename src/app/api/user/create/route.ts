@@ -7,8 +7,9 @@ import z from "zod";
 
 export const POST = async (req: NextRequest) => {
   console.info("SSSSS")
-  const uid = await checkUserAndReturn(req.headers)
-  if (!!!uid) return NextResponse.json(null, { status: 401 })
+  const res = await checkUserAndReturn(req.headers)
+  if (!res.success) return NextResponse.json(res, { status: 401 })
+  const { data: uid } = res
   const { error, success, data } = signupServerSchema.safeParse(await req.json())
   if (!success) return NextResponse.json(z.treeifyError(error), { status: 400 })
   const { name, email } = data
