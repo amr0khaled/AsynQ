@@ -26,7 +26,7 @@ export default function AiChat() {
         prompt,
         content
       })
-      console.debug("NEWWWW")
+      //console.debug("NEWWWW")
       didStreamFinished.current = false
     }
   }, [isStreaming, content, prompt, newPost])
@@ -48,6 +48,7 @@ export default function AiChat() {
           'Content-Type': 'application/json',
         },
       })
+      if (res.headers.getContentType === 'application/json' && !res.data.success) toast.error(`${res.data.code}: ${res.data.message}`)
 
       const reader = (res.data as ReadableStream | null)?.getReader()
       const decoder = new TextDecoder()
