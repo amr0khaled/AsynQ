@@ -1,42 +1,67 @@
 'use client'
 import { EllipsisVertical, Search, Trash } from "lucide-react";
-import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuAction, SidebarMenuButton, SidebarMenuItem, SidebarMenuSkeleton, SidebarTrigger, useSidebar } from "./ui/sidebar";
-import { useEffect, useRef } from "react";
-import { useAuth } from "@/hooks/use-auth";
-import { auth } from "@/lib/firebase/client";
+import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, SidebarInput, SidebarMenu, SidebarMenuAction, SidebarMenuButton, SidebarMenuItem, SidebarMenuSkeleton, SidebarSeparator, useSidebar } from "./ui/sidebar";
+import { useEffect, useState } from "react";
 import { useChat } from "@/hooks/use-chat";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu";
-
+import { Label } from "./ui/label";
+import { useIsMobile } from "@/hooks/use-mobile";
+import type { Post } from "@/lib/types";
+import { kyivType } from "./header";
+import { useRouter } from "next/navigation";
 
 export default function HistorySidebar() {
   const {
     isPending,
     posts,
     post,
-    loadPosts,
     changePost,
-    deletePost
+    deletePost,
   } = useChat()
+  const { push } = useRouter()
+  const [currentPosts, setPosts] = useState<Post[]>([])
   const { state } = useSidebar()
-
-  return <Sidebar variant="inset" collapsible="icon">
+  const isMobile = useIsMobile()
+  useEffect(() => {
+    setPosts(posts)
+  }, [posts])
+  const handleSearch = (search: string) => {
+    const reg = new RegExp(search.toLowerCase().trim())
+    setPosts(() => [...posts.filter(({ prompt }) => !!prompt.toLowerCase().match(reg))])
+  }
+  return <Sidebar variant="inset">
     <SidebarHeader>
-      <SidebarMenu className='flex flex-row items-center justify-between'>
+      <SidebarMenu>
         <SidebarMenuItem>
-          <SidebarTrigger
-            variant={'primary'}
-            className='self-end hover:translate-0 size-8'
-          />
-        </SidebarMenuItem>
-        <SidebarMenuItem
-          className={state === 'collapsed' ? 'invisible -translate-x-12' : ''}
-          aria-disabled={state === 'collapsed'}
-        >
-          <SidebarMenuButton>
-            <Search />
+          <SidebarMenuButton className='text-left hover:bg-transparent'>
+            <span className={`${kyivType.className} h-fit text-xl cursor-pointer`} onClick={() => push('/')}>
+              AsynQ
+            </span>
           </SidebarMenuButton>
         </SidebarMenuItem>
       </SidebarMenu>
+      <SidebarGroup className='flex flex-row items-center justify-between'>
+        <SidebarGroupContent
+          className='relative'
+          aria-disabled={state === 'collapsed'}
+        >
+          <Label
+            htmlFor="search"
+            className='sr-only'
+          >Search</Label>
+          <SidebarInput
+            id="search"
+            placeholder="Search the posts..."
+            className='pl-8'
+            onChange={(e) => {
+              handleSearch(e.target.value)
+            }}
+          />
+          <Search
+            className='absolute top-1/2 left-2 size-4 -translate-y-1/2 opacity-50 select-none my-auto pointer-events-none '
+          />
+        </SidebarGroupContent>
+      </SidebarGroup>
     </SidebarHeader>
     <SidebarContent>
       <SidebarGroup>
@@ -44,14 +69,14 @@ export default function HistorySidebar() {
         <SidebarGroupContent>
           <SidebarMenu>
             {
-              (isPending && posts.length < 1) ?
+              (isPending && currentPosts.length < 1) ?
                 Array.from({ length: 10 }).map((_, index) => (
                   <SidebarMenuItem key={index}>
                     <SidebarMenuSkeleton />
                   </SidebarMenuItem>
                 ))
                 :
-                posts.map(({ id, prompt }) => (
+                currentPosts.map(({ id, prompt }) => (
                   <SidebarMenuItem onClick={() => changePost(id)} key={id}>
                     <SidebarMenuButton className='transition-colors duration-100' isActive={post?.id === id}>
                       <span className='w-48 text-xs truncate'>
@@ -64,7 +89,10 @@ export default function HistorySidebar() {
                           <EllipsisVertical className='size-0' />
                         </SidebarMenuAction>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent>
+                      <DropdownMenuContent
+                        side={isMobile ? 'bottom' : 'right'}
+                        align={isMobile ? 'end' : 'center'}
+                      >
                         <DropdownMenuItem variant="destructive" onClick={() => deletePost(id)}>
                           <Trash />
                           Delete

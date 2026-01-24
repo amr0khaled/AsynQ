@@ -87,7 +87,7 @@ export default function AiChat() {
       setIsStreaming(false)
     }
   }
-  return <div className="max-w-6xl min-w-3xl mx-auto p-6 space-y-4">
+  return <div className="max-w-6xl min-w-3xl mx-auto py-2 space-y-4">
     <div className='mx-auto max-w-2xl flex flex-col gap-y-2 justify-start mb-10'>
       <h1 className={`text-2xl  ${righteous.className}`}>Content Generation AI Tool</h1>
 
