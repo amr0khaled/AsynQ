@@ -1,7 +1,10 @@
+'use client'
 import { Button } from "@/components/ui/button";
 import '@/styles/pages/home.css'
+import { useRouter } from "next/navigation";
 
 export default function Home() {
+  const { push } = useRouter()
   return <section className='hero'>
     <p className='main-paragraph'>
       <span>
@@ -13,7 +16,7 @@ export default function Home() {
     </p>
     <div className='operation-buttons'>
       <Button variant='secondary'>Learn more</Button>
-      <Button variant='primary'>Get Started</Button>
+      <Button variant='primary' onClick={() => push('/post/create')}>Get Started</Button>
     </div>
   </section>;
 }
