@@ -5,7 +5,7 @@ interface RateLimitStore {
 
 const rateLimitMap = new Map<string, RateLimitStore>()
 
-export function checkRateLimit(identifier: string, maxRequests = 10, windowMs = 60000): boolean {
+export function checkRateLimit(identifier: string, maxRequests = 5, windowMs = 60000): boolean {
   const now = Date.now()
   const userLimit = rateLimitMap.get(identifier)
 
