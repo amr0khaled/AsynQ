@@ -10,7 +10,8 @@ import { useTheme } from '@/hooks/use-theme';
 import { useRouter } from 'next/navigation';
 import { useCredits } from '@/hooks/use-credits';
 import { useAuth } from '@/hooks/use-auth';
-import { useAuthState } from 'react-firebase-hooks/auth';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { SidebarTrigger } from './ui/sidebar';
 export const kyivType = localFont({
   src: '../assets/fonts/KyivTypeSans-VarGX.ttf'
 })
@@ -19,9 +20,18 @@ export default function Header() {
   const router = useRouter()
   const { credits } = useCredits()
   const { signOut, user } = useAuth(auth)
+  const isMobile = useIsMobile()
 
   const isAuthed = !!user
   useTheme()
+  if (isMobile) return <header className='header justify-center'>
+    <SidebarTrigger className='absolute hover:-translate-y-1/2 left-2 top-1/2 -translate-y-1/2' />
+    <div className='logo-container'>
+      <span className={`logo ${kyivType.className}`}>
+        AsynQ
+      </span>
+    </div>
+  </header>
 
   return <header className='header'>
     <span className='flex-1'>
