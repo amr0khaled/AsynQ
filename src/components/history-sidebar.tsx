@@ -20,7 +20,7 @@ export default function HistorySidebar() {
   } = useChat()
   const { push } = useRouter()
   const [currentPosts, setPosts] = useState<Post[]>([])
-  const { state } = useSidebar()
+  const { state, setOpenMobile } = useSidebar()
   const isMobile = useIsMobile()
   useEffect(() => {
     setPosts(posts)
@@ -29,12 +29,18 @@ export default function HistorySidebar() {
     const reg = new RegExp(search.toLowerCase().trim())
     setPosts(() => [...posts.filter(({ prompt }) => !!prompt.toLowerCase().match(reg))])
   }
-  return <Sidebar variant="inset">
+  return <Sidebar variant={'inset'}>
     <SidebarHeader>
       <SidebarMenu>
         <SidebarMenuItem>
           <SidebarMenuButton className='text-left hover:bg-transparent'>
-            <span className={`${kyivType.className} h-fit text-xl cursor-pointer`} onClick={() => push('/')}>
+            <span
+              className={`${kyivType.className} h-fit text-xl cursor-pointer`}
+              onClick={() => {
+                setOpenMobile(false)
+                push('/')
+              }}
+            >
               AsynQ
             </span>
           </SidebarMenuButton>
@@ -77,8 +83,11 @@ export default function HistorySidebar() {
                 ))
                 :
                 currentPosts.map(({ id, prompt }) => (
-                  <SidebarMenuItem onClick={() => changePost(id)} key={id}>
-                    <SidebarMenuButton>
+                  <SidebarMenuItem onClick={() => {
+                    setOpenMobile(false)
+                    changePost(id)
+                  }} key={id}>
+                    <SidebarMenuButton className='transition-colors duration-100' isActive={post?.id === id}>
                       <span className='w-48 text-xs truncate'>
                         {prompt}
                       </span>

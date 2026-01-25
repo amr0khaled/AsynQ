@@ -23,6 +23,6 @@ export default function AiPromptInput({ prompt, setPrompt, streamGemini, isStrea
       }
     }}
     disabled={isStreaming}
-    className="min-w-lg max-w-full"
+    className="md:min-w-lg md:max-w-full"
   />
 }
