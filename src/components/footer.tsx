@@ -26,7 +26,7 @@ export default function Footer() {
             className='flex cursor-pointer select-none gap-2'
             onClick={() => open("https://www.linkedin.com/in/amr0khaled/", '_blank')}
           >
-            Amr Khaled<MdOpenInNew className='text-background/60' size='16' />
+            Amr Khaled<MdOpenInNew className='dark:text-white/60 text-black/60' size='16' />
           </span>
         </h3>
         <p className='about'>

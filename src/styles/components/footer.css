@@ -12,38 +12,38 @@
     .app-details,
     .dev-details,
     .contacts {
-      @apply flex flex-col gap-4;
+      @apply flex flex-col gap-2 md:gap-4;
     }
 
     .app-details {
       .brand {
-        @apply font-normal text-3xl;
+        @apply font-normal text-xl md:text-3xl;
       }
 
     }
 
     .about {
-      @apply text-foreground/60 md:w-3/5 w-10/12 text-xl;
+      @apply text-foreground/60 md:w-3/5 w-10/12 text-base md:text-xl;
     }
 
     .dev-details {
       .dev-name {
         @apply transition-transform duration-200 ease-out;
-        @apply text-2xl flex gap-4;
+        @apply text-lg md:text-2xl flex gap-2 md:gap-4;
       }
     }
 
     .contacts {
       .icons-list {
-        @apply flex gap-4;
+        @apply flex gap-2 md:gap-4;
 
         .icon-item {
           @apply hover:-translate-y-1;
           @apply transition-transform duration-200 ease-out;
-          @apply text-foreground/70 hover:text-background cursor-pointer;
+          @apply text-foreground/70 hover:text-gray-600 cursor-pointer;
 
           .icon {
-            @apply size-8;
+            @apply size-6 md:size-8;
 
           }
         }

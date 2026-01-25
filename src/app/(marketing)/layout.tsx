@@ -12,23 +12,22 @@ export default function RootLayout({
 }>) {
   const isMobile = useIsMobile()
   const Fragment = ({ children }: { children: React.ReactNode }) => {
-    if (isMobile) {
-      return <SidebarProvider className="block">
-        <SidebarHome />
+    if (!isMobile) {
+      return <>
         {children}
-      </SidebarProvider>
+      </>
     }
-    return <>
+    return <SidebarProvider className="block">
+      <SidebarHome />
       {children}
-    </>
+    </SidebarProvider>
   }
   return <Fragment>
     <Header />
-    {/*
+
     <main className='min-h-[calc(100vh-80px)] w-full pt-20'>
       {children}
     </main>
     <Footer />
-    */}
   </Fragment>
 }

@@ -1,8 +1,5 @@
 'use client'
-import SidebarHome from "@/components/sidebar-home";
 import { Button } from "@/components/ui/button";
-import { Sidebar, SidebarProvider } from "@/components/ui/sidebar";
-import { useIsMobile } from "@/hooks/use-mobile";
 import '@/styles/pages/home.css'
 import { useRouter } from "next/navigation";
 
