@@ -2,16 +2,16 @@
 
 @layer components {
   .hero {
-    @apply min-h-screen w-full -translate-y-4;
-    @apply flex flex-col justify-center items-center gap-y-8;
+    @apply mt-40 md:mt-0 md:min-h-screen w-full -translate-y-4;
+    @apply flex flex-col justify-center items-center gap-y-5 md:gap-y-8;
 
     .main-paragraph {
-      @apply text-3xl;
+      @apply text-lg md:text-3xl;
       @apply flex flex-col items-center;
-      @apply leading-10;
+      @apply leading-10 px-2 md:px-0;
 
       .your {
-        @apply text-5xl font-semibold;
+        @apply text-3xl md:text-5xl md:w-fit font-semibold;
       }
 
       span.gradient {
@@ -22,7 +22,7 @@
 
     .operation-buttons {
       @apply w-1/3;
-      @apply flex justify-around items-center;
+      @apply flex flex-col gap-y-3 md:flex-row justify-around items-center;
     }
   }
 
