@@ -25,7 +25,7 @@ export default function RootLayout({
   return <Fragment>
     <Header />
 
-    <main className='min-h-[calc(100vh-80px)] w-full pt-20'>
+    <main className='sm:min-h-[60vh] md:min-h-[calc(100vh-80px)] w-full pt-20'>
       {children}
     </main>
     <Footer />

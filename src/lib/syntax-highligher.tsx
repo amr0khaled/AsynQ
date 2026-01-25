@@ -40,16 +40,33 @@ export const components: Components = {
   code({ node, inline, className, ...props }: any) {
     const match = /language-(\w+)/.exec(className || '');
     return !inline && match ? (
-      <PrismLight
-        style={theme}
-        language={match[1]}
-        PreTag="div"
-        showLineNumbers={true}
-        useInlineStyles={true}
-        {...props}
-      >
-        {props.children}
-      </PrismLight>
+      <div className='grid grid-cols-1 w-full max-w-full'>
+        <PrismLight
+          style={theme}
+          customStyle={{
+            margin: '0',
+            width: '100% !important',
+            display: 'grid',
+            overflowX: 'auto',
+          }}
+          codeTagProps={{
+            style: {
+              // FIX THE TYPO HERE
+              width: 'fit-content', // Allows code to grow > 100% to trigger scroll
+              minWidth: '100%',     // Ensures bg fills container if code is short
+              display: 'block',     // Treats code as a box, not inline text
+            }
+          }}
+          language={match[1]}
+          PreTag="div"
+          showLineNumbers={true}
+          useInlineStyles={true}
+          {...props}
+          className={`${!!className ? className + ' ' : ''}m-0 w-full md:max-w-none px-0 md:p-1 overflow-x-auto`}
+        >
+          {props.children}
+        </PrismLight>
+      </div>
     ) : (
       <code className={className} {...props} />
     )

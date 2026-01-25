@@ -3,7 +3,7 @@
 @layer components {
   .header {
     @apply fixed z-50 bg-background/40;
-    @apply w-full md:min-w-full h-16 md:px-6 md:py-2;
+    @apply w-full sm:min-w-full h-16 sm:px-6 sm:py-2;
     @apply flex flex-row items-center justify-center;
     @apply border-b border-white/15;
 

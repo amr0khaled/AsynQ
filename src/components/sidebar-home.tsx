@@ -65,7 +65,10 @@ export default function SidebarHome() {
               <SidebarMenuButton
                 size='default'
                 className='justify-center'
-                onClick={() => push("/login")}
+                onClick={() => {
+                  setOpenMobile(false)
+                  push("/login")
+                }}
                 asChild>
                 <Button className='hover:translate-0 h-full'>
                   Log In
@@ -74,7 +77,10 @@ export default function SidebarHome() {
             </SidebarMenuItem>
             <SidebarMenuItem>
               <SidebarMenuButton
-                onClick={() => push("/signup")}
+                onClick={() => {
+                  setOpenMobile(false)
+                  push("/signup")
+                }}
                 className='h-full justify-center'>
                 Sign Up
               </SidebarMenuButton>

@@ -23,7 +23,7 @@ export default function Layout({ children }: Props) {
   return <Chat>
     <SidebarProvider>
       <HistorySidebar />
-      <SidebarInset>
+      <SidebarInset className="z-50">
         <DashboardHeader />
         <section className='flex flex-col w-full'>
           {children}
