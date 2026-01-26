@@ -21,7 +21,7 @@ const googleProvider = new GoogleAuthProvider()
 let analytics: Analytics;
 if (typeof window !== "undefined") {
   isSupported().then((yes) => {
-    if (yes) {
+    if (yes && process.env.NODE_ENV === 'production') {
       analytics = getAnalytics(getApp());
     }
   });

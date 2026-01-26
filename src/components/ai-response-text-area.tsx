@@ -183,48 +183,6 @@ export default function AiResponseTextarea({ isStreaming, content, setContent }:
           </TooltipContent>
         </Tooltip>
       </div>
-      {isStreaming && <span className="inline-block w-2 h-5 bg-gray-800 animate-pulse ml-1" />}
-    </div>
-    <div className='w-full flex justify-end items-center gap-x-2'>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button
-            variant={'ghost'}
-            size='icon-sm'
-            className='hover:translate-0'
-            onClick={() => setEditMode(true)}
-          >
-            <Edit3 />
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent side='bottom'>
-          <p>Edit</p>
-        </TooltipContent>
-      </Tooltip>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button
-            variant={'ghost'}
-            size='icon-sm'
-            className='hover:translate-0'
-            onClick={async () => {
-              toast.promise(
-                navigator.clipboard.writeText(content || await navigator.clipboard.readText()),
-                {
-                  loading: <Spinner />,
-                  success: `Copied to clipboard.`,
-                  error: "Couldn't copy to clipboard.",
-                }
-              )
-            }}
-          >
-            <Copy />
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent side='bottom'>
-          <p>Copy</p>
-        </TooltipContent>
-      </Tooltip>
     </div>
   </div>
 }

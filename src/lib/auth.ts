@@ -1,72 +1,48 @@
-import { NextRequest } from "next/server";
 import prisma from "./prisma";
 import { getAuth } from "firebase-admin/auth";
+import { ActionResponse, ERROR_TOKEN_CHECK, ErrorCodes, ID_TOKEN_EXPIRED, NOT_FOUND, UNAUTHENTICATED } from "./types";
+import { AppRouterContext } from "next/dist/server/route-modules/pages/vendored/contexts/entrypoints";
+import { User } from "./prisma/index";
 
 
-export async function checkUser(headers: Headers) {
+
+export async function checkUser(headers: Headers): Promise<ActionResponse<null>> {
   const authHeader = headers.get("Authorization")
   const token = authHeader?.split("Bearer ")[1]
-  if (!token) return 401
+  if (!token) return ErrorCodes["UNAUTHENTICATED"]
 
   try {
     const auth = getAuth()
     await auth.verifyIdToken(token)
-    return true
-  } catch {
-    return 401
-  }
-}
-export async function checkUserAndReturn(headers: Headers) {
-  const authHeader = headers.get("Authorization")
-  const token = authHeader?.split("Bearer ")[1]
-  if (!token) return false
-
-  try {
-    const auth = getAuth()
-    const { uid } = await auth.verifyIdToken(token)
-    return uid
-  } catch (e) {
-    console.error(e)
-    return false
-  }
-}
-
-export async function checkUserAndReturnFromDB(headers: Headers) {
-  const authHeader = headers.get("Authorization")
-  const token = authHeader?.split("Bearer ")[1]
-  if (!token) return 401
-
-  try {
-    const auth = getAuth()
-    const { uid, email } = await auth.verifyIdToken(token)
-    const user = await prisma.user.findUnique({
-      where: {
-        id: uid,
-        email,
-      }
-    })
-    if (!user) return 404
-    return user
-  } catch {
-    return 401
-  }
-}
-
-export async function getUserIdAndReturn(token: string | undefined) {
-  if (!token) return null
-  try {
-    const auth = getAuth()
-    const { uid } = await auth.verifyIdToken(token)
-    // TODO: Add a reauthentication of revoked token
-    return uid
+    return {
+      success: true,
+      data: null
+    }
   } catch (e: any) {
-    // TODO: Handle revoked token
-    console.error('Error in checking user token', e.code)
-    return null
+    return ErrorCodes[e.code || 'TOKEN']
   }
 }
-export async function getUserAndReturnFromDB(token: string | undefined) {
-  if (!token) return null
+export async function checkUserAndReturn(headers: Headers): Promise<ActionResponse<string>> {
+  const authHeader = headers.get("Authorization")
+  const token = authHeader?.split("Bearer ")[1]
+  if (!token) return ErrorCodes["UNAUTHENTICATED"]
+
+  try {
+    const auth = getAuth()
+    const { uid } = await auth.verifyIdToken(token)
+    return {
+      success: true,
+      data: uid
+    }
+  } catch (e: any) {
+    return ErrorCodes[e.code || 'TOKEN']
+  }
+}
+
+export async function checkUserAndReturnFromDB(headers: Headers): Promise<ActionResponse<User>> {
+  const authHeader = headers.get("Authorization")
+  const token = authHeader?.split("Bearer ")[1]
+  if (!token) return ErrorCodes["UNAUTHENTICATED"]
 
   try {
     const auth = getAuth()
@@ -77,9 +53,47 @@ export async function getUserAndReturnFromDB(token: string | undefined) {
         email,
       }
     })
-    if (!user) return null
-    return user
-  } catch {
-    return null
+    if (!user) return ErrorCodes["NOT_FOUND"]
+    return {
+      success: true,
+      data: user
+    }
+  } catch (e: any) {
+    return ErrorCodes[e.code || 'TOKEN']
+  }
+}
+
+export async function getUserIdAndReturn(token: string | undefined): Promise<ActionResponse<string>> {
+  if (!token) return ErrorCodes["UNAUTHENTICATED"]
+  try {
+    const auth = getAuth()
+    const { uid } = await auth.verifyIdToken(token)
+    return {
+      success: true,
+      data: uid
+    }
+  } catch (e: any) {
+    return ErrorCodes[e.code || 'TOKEN']
+  }
+}
+export async function getUserAndReturnFromDB(token: string | undefined): Promise<ActionResponse<User>> {
+  if (!token) return ErrorCodes["UNAUTHENTICATED"]
+
+  try {
+    const auth = getAuth()
+    const { uid, email } = await auth.verifyIdToken(token)
+    const user = await prisma.user.findUnique({
+      where: {
+        id: uid,
+        email,
+      }
+    })
+    if (!user) return ErrorCodes["NOT_FOUND"]
+    return {
+      success: true,
+      data: user
+    }
+  } catch (e: any) {
+    return ErrorCodes[e.code || 'TOKEN']
   }
 }

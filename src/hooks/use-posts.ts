@@ -1,18 +1,22 @@
 'use server'
 import prisma from "@/lib/prisma"
-import type { Post, PostDelete, PostUpdate, PostCreate } from "@/lib/types"
+import { type Post, type PostDelete, type PostUpdate, type PostCreate, type ActionResponse, SCHEMA_ERROR } from "@/lib/types"
 import { getUserIdAndReturn } from "@/lib/auth"
 import { cookies } from "next/headers"
 import { newPostServerSchema, updatePostServerSchema } from "@/lib/input-schemas"
 import z from "zod"
 
-export async function getPosts(): Promise<Post[]> {
+export async function getPosts(): Promise<ActionResponse<Post[]>> {
   const cookieStore = await cookies()
   const token = cookieStore.get("token")
-  if (!token) return []
-  const userId = await getUserIdAndReturn(token.value)
-  if (!userId) return []
-  return await prisma.post.findMany({
+  const response: ActionResponse<Post[]> = {
+    success: true,
+    data: []
+  }
+  const res = await getUserIdAndReturn(token?.value)
+  if (!res.success) return res
+  const { data: userId } = res
+  const posts = await prisma.post.findMany({
     where: {
       userId
     },
@@ -25,15 +29,22 @@ export async function getPosts(): Promise<Post[]> {
       content: true
     },
   })
+  response['data'] = posts
+
+  return response
 }
 
-export async function getPost(id: string): Promise<Post | null> {
+export async function getPost(id: string): Promise<ActionResponse<Post | null>> {
   const cookieStore = await cookies()
   const token = cookieStore.get("token")
-  if (!token) return null
-  const userId = await getUserIdAndReturn(token.value)
-  if (!userId) return null
-  return await prisma.post.findUnique({
+  const response: ActionResponse<Post | null> = {
+    success: true,
+    data: null
+  }
+  const res = await getUserIdAndReturn(token?.value)
+  if (!res.success) return res
+  const { data: userId } = res
+  const post = await prisma.post.findUnique({
     where: {
       userId,
       id
@@ -42,18 +53,27 @@ export async function getPost(id: string): Promise<Post | null> {
       userId: true
     }
   })
+  response['data'] = post
+  return response
 }
 
-export async function newPost(post: PostCreate): Promise<Post | null | string> {
+export async function newPost(post: PostCreate): Promise<ActionResponse<Post | null>> {
   const cookieStore = await cookies()
   const token = cookieStore.get("token")
-  if (!token) return null
-  const userId = await getUserIdAndReturn(token.value)
-  if (!userId) return null
+  const response: ActionResponse<Post | null> = {
+    success: true,
+    data: null
+  }
+  const res = await getUserIdAndReturn(token?.value)
+  if (!res.success) return res
+  const { data: userId } = res
   const { data, success, error } = newPostServerSchema.safeParse(post)
-  if (!success) return z.prettifyError(error)
+  if (!success) return {
+    ...SCHEMA_ERROR,
+    message: z.prettifyError(error)
+  }
   const { prompt, content } = data
-  return await prisma.post.create({
+  const newPost = await prisma.post.create({
     data: {
       prompt,
       content,
@@ -62,19 +82,27 @@ export async function newPost(post: PostCreate): Promise<Post | null | string> {
     omit: {
       userId: true
     }
-
   })
+  response['data'] = newPost
+  return response
 }
-export async function updatePost(post: PostUpdate): Promise<Post | null | string> {
+export async function updatePost(post: PostUpdate): Promise<ActionResponse<Post | null>> {
   const cookieStore = await cookies()
   const token = cookieStore.get("token")
-  if (!token) return null
-  const userId = await getUserIdAndReturn(token.value)
-  if (!userId) return null
+  const response: ActionResponse<Post | null> = {
+    success: true,
+    data: null
+  }
+  const res = await getUserIdAndReturn(token?.value)
+  if (!res.success) return res
+  const { data: userId } = res
   const { data, success, error } = updatePostServerSchema.safeParse(post)
-  if (!success) return z.prettifyError(error)
+  if (!success) return {
+    ...SCHEMA_ERROR,
+    message: z.prettifyError(error)
+  }
   const { id, content } = data
-  return await prisma.post.update({
+  const updatedPost = await prisma.post.update({
     where: {
       userId,
       id
@@ -86,13 +114,19 @@ export async function updatePost(post: PostUpdate): Promise<Post | null | string
       userId: true
     }
   })
+  response['data'] = updatedPost
+  return response
 }
-export async function deletePost(id: PostDelete): Promise<boolean> {
+export async function deletePost(id: PostDelete): Promise<ActionResponse<boolean>> {
   const cookieStore = await cookies()
   const token = cookieStore.get("token")
-  if (!token) return false
-  const userId = await getUserIdAndReturn(token.value)
-  if (!userId) return false
+  const response: ActionResponse<boolean> = {
+    success: true,
+    data: false
+  }
+  const res = await getUserIdAndReturn(token?.value)
+  if (!res.success) return res
+  const { data: userId } = res
 
   await prisma.post.delete({
     where: {
@@ -100,5 +134,6 @@ export async function deletePost(id: PostDelete): Promise<boolean> {
       id
     },
   })
-  return true
+  response['data'] = true
+  return response
 }
