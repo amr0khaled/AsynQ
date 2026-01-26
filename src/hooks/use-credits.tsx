@@ -35,7 +35,7 @@ export default function Credits({ children }: Props) {
   const [credits, setCredits] = useState(0)
   const [triggerSync, setTriggerSync] = useState(0)
   const [user, loading] = useAuthState(auth)
-  useLayoutEffect(() => {
+  useEffect(() => {
     if (!!loading) return
     if (!user) {
       setCredits(0);
