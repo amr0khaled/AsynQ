@@ -13,7 +13,6 @@ export default function DashboardHeader() {
 
   return <header className='w-full md:h-10 h-14 py-2 md:py-0 flex items-center px-3'>
     <SidebarTrigger
-      onClick={() => { console.log("SSSSSS") }}
       className='hover:translate-0 size-8'
     />
   </header>
