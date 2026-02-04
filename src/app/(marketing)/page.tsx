@@ -16,8 +16,8 @@ export default function Home() {
       </span>
     </p>
     <div className='operation-buttons'>
-      <Button variant='secondary'>Learn more</Button>
-      <Button variant='primary' onClick={() => push('/post/create')}>Get Started</Button>
+      <Button className='op-button' variant='secondary'>Learn more</Button>
+      <Button className='op-button' variant='primary' onClick={() => push('/post/create')}>Get Started</Button>
     </div>
   </section>
 }
