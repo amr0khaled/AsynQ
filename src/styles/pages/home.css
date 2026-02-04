@@ -23,20 +23,13 @@
     .operation-buttons {
       @apply w-1/3 sm:w-fit;
       @apply flex flex-col sm:gap-6 gap-y-3 sm:flex-row justify-around items-center;
+
+      button {
+        @apply w-32 h-12 rounded-3xl;
+        @apply flex justify-center items-center;
+        @apply font-semibold text-xl;
+      }
     }
   }
 
-  button {
-    @apply w-32 h-12 rounded-3xl;
-    @apply flex justify-center items-center;
-    @apply font-semibold text-xl;
-  }
-
-  button.primary {
-    @apply bg-accent text-secondary;
-  }
-
-  button.secondary {
-    @apply bg-secondary text-accent;
-  }
 }
